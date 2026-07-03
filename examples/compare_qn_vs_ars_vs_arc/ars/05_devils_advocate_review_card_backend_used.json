@@ -1,0 +1,17 @@
+{
+  "stage_id": "05-devils-advocate",
+  "framework": "ARS",
+  "agent": "devils_advocate_reviewer_agent.md",
+  "backend_requested": "claude",
+  "backend_actually_used": "claude",
+  "model_id": "claude-haiku-4-5-20251001",
+  "elapsed_s": 53.79728316690307,
+  "usage": {
+    "input_tokens": 1,
+    "output_tokens": 2076,
+    "cache_read_input_tokens": 0,
+    "cache_creation_input_tokens": 55325,
+    "total_cost_usd": 0.43164254999999996,
+    "tokens_estimated": false
+  }
+}

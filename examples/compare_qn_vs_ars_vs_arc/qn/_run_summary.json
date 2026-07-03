@@ -1,0 +1,55 @@
+{
+  "stages": [
+    {
+      "stage": "deep_research",
+      "skill": "deep_research",
+      "rc": 0,
+      "elapsed_s": 38.92,
+      "outdir": "<repo>/examples/end_to_end/compare_qn_vs_ars_vs_arc/_run/qn/01_research_review",
+      "skipped": false,
+      "notes": [
+        "command: bash <repo>/skills/deep_research/run.sh --outdir <repo>/examples/end_to_end/compare_qn_vs_ars_vs_arc/_run/qn/01_research_review --mode review --paper <repo>/examples/end_to_end/compare_qn_vs_ars_vs_arc/_run/inputs/lcutrotter.txt --topic Simple and high-precision Hamiltonian simulation by compensating Trotter error with LCU --journal prx-quantum --llm claude",
+        "stage_id: 01-research"
+      ]
+    },
+    {
+      "stage": "quantum_reviewer",
+      "skill": "quantum_reviewer",
+      "rc": 0,
+      "elapsed_s": 132.64,
+      "outdir": "<repo>/examples/end_to_end/compare_qn_vs_ars_vs_arc/_run/qn/02_reviewer_panel",
+      "skipped": false,
+      "notes": [
+        "command: bash <repo>/skills/quantum_reviewer/run.sh --outdir <repo>/examples/end_to_end/compare_qn_vs_ars_vs_arc/_run/qn/02_reviewer_panel --mode full --draft <repo>/examples/end_to_end/compare_qn_vs_ars_vs_arc/_run/inputs/lcutrotter.txt --journal prx-quantum --llm claude",
+        "stage_id: 02-reviewer"
+      ]
+    },
+    {
+      "stage": "logical_fallacies",
+      "skill": "logical_fallacies",
+      "rc": 0,
+      "elapsed_s": 50.59,
+      "outdir": "<repo>/examples/end_to_end/compare_qn_vs_ars_vs_arc/_run/qn/03_fallacies",
+      "skipped": false,
+      "notes": [
+        "command: bash <repo>/skills/logical_fallacies/run.sh --outdir <repo>/examples/end_to_end/compare_qn_vs_ars_vs_arc/_run/qn/03_fallacies --draft <repo>/examples/end_to_end/compare_qn_vs_ars_vs_arc/_run/inputs/lcutrotter.txt --llm claude",
+        "stage_id: 03-fallacies"
+      ]
+    },
+    {
+      "stage": "process_summary",
+      "skill": "process_summary",
+      "rc": 0,
+      "elapsed_s": 33.44,
+      "outdir": "<repo>/examples/end_to_end/compare_qn_vs_ars_vs_arc/_run/qn/04_summary",
+      "skipped": false,
+      "notes": [
+        "command: bash <repo>/skills/process_summary/run.sh --outdir <repo>/examples/end_to_end/compare_qn_vs_ars_vs_arc/_run/qn/04_summary --run-dir <repo>/examples/end_to_end/compare_qn_vs_ars_vs_arc/_run/qn --llm claude",
+        "stage_id: 04-cqe"
+      ]
+    }
+  ],
+  "n_stages_run": 4,
+  "n_stages_skipped": 0,
+  "n_failures": 0
+}

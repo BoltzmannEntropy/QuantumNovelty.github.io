@@ -1,0 +1,10 @@
+{
+  "stage_id": "02-reviewer",
+  "stage_dir": "02_reviewer_panel",
+  "duration_sec": 133,
+  "status": "done",
+  "artifacts_count": 5,
+  "error": null,
+  "started_iso": "2026-06-10T12:45:28Z",
+  "ended_iso": "2026-06-10T12:47:41Z"
+}

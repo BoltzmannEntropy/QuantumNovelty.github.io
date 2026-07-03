@@ -1,0 +1,41 @@
+--- backend: claude ---
+--- elapsed_s: 52.80 ---
+--- threshold: medium ---
+--- stdout (first 4KB) ---
+I'll carefully analyze this quantum computing manuscript for logical fallacies using the provided taxonomy, focusing on findings with severity at or above **medium**.
+
+---
+
+## Section 1: Markdown Findings
+
+**Fallacy:** cherry-picked-baseline
+**Severity:** high
+**Location:** Section I (Introduction) and Section V.A (Single-molecule optimization), Figure 2
+**Evidence:** "We compare Flow-VQE to a number of standard benchmarks through numerical simulations... We find that Flow-VQE outperforms baseline optimization algorithms" and comparing against "gradient descent (GD), quantum natural-gradient simultaneous perturbation stochastic approximation (QNSPSA), Adam"
+**Why it's the fallacy:** The paper compares against generic optimization algorithms (GD, Adam, QNSPSA) but omits comparison with other published warm-start and ML-based VQE initialization methods that they explicitly cite as prior work (references [32-44]), including supervised learning approaches, meta-learning frameworks, and other generative modeling methods. For instance, they cite methods like FLIP [42] and meta-VQE [41] but don't benchmark against them on the same molecular systems.
+**Suggested fix:** Include direct numerical comparisons with at least one or two of the most relevant published warm-start methods (e.g., the supervised learning approaches from [32-33] or the meta-learning methods from [40-44]) on the same Hamiltonians, or explicitly state why such comparisons were not feasible and acknowledge this as a limitation.
+
+---
+
+**Fallacy:** conflated-regimes
+**Severity:** high
+**Location:** Section I (Introduction), Section VI (Limitations and Future Work)
+**Evidence:** "While the numerical experiments reported here extend only to 12-qubit active spaces and 117 variational parameters, several features of Flow-VQE promise broad quantum-resource savings, even when scaling to larger molecules."
+**Why it's the fallacy:** The paper extrapolates from small Hamiltonians (5-12 qubits, up to 117 parameters) to claims about larger systems without empirical validation. The claim that advantages will persist at scale is speculative, especially given that barren plateaus and optimization landscape complexity scale non-trivially with system size. The paper acknowledges this only partially in limitations but still makes forward-looking claims about scalability.
+**Suggested fix:** Temper scalability claims with explicit caveats. Replace "promise broad quantum-resource savings" with "may potentially offer resource savings pending empirical validation at larger scales" and acknowledge that the scaling behavior of the normalizing flow approach with qubit count remains uncharacterized.
+
+---
+
+**Fallacy:** hasty-generalization
+**Severity:** medium
+**Location:** Section V.C (Estimate of cost advantage)
+**Evidence:** "For NH3, standard VQE requires an average of C̄VQE = 5,265 circuit evaluations per test point... These estimates are instance-dependent and not intended as universal benchmarks, but they illustrate the practical advantages of Flow-VQE-M"
+**Why it's the fallacy:** The cost advantage analysis is based on only two molecules (NH3 and C6H6) with very limited training configurations (4 configurations each). The paper then uses these narrow results to draw broader conclusions about the method's advantages, despite acknowledging the estimates are "instance-dependent."
+**Suggested fix:** Explicitly state that the cost advantage calculations are illustrative examples from a narrow test set, not generalizable predictions. Add language such as: "These results demonstrate potential advantages in specific cases but should not be extrapolated to other molecular systems without further validation."
+
+---
+
+**Fallacy:** active-space-handwave
+**Severity:** medium
+**Location:** Section IV.A.1 (Electronic structure modeling) and Section VII (Conclusion)
+**Evidence:** "For active-space selections, we perform them to manage computational complexity while preserving essential electronic structur

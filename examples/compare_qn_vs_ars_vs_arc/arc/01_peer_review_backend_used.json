@@ -1,0 +1,17 @@
+{
+  "stage_id": "01-peer-review",
+  "framework": "ARC",
+  "stage_name": "peer_review",
+  "backend_requested": "claude",
+  "backend_actually_used": "claude",
+  "model_id": "claude-haiku-4-5-20251001",
+  "elapsed_s": 62.42901466705371,
+  "usage": {
+    "input_tokens": 2,
+    "output_tokens": 2755,
+    "cache_read_input_tokens": 17879,
+    "cache_creation_input_tokens": 38665,
+    "total_cost_usd": 0.35291704999999995,
+    "tokens_estimated": false
+  }
+}

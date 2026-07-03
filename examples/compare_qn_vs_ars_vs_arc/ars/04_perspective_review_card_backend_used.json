@@ -1,0 +1,17 @@
+{
+  "stage_id": "04-perspective",
+  "framework": "ARS",
+  "agent": "perspective_reviewer_agent.md",
+  "backend_requested": "claude",
+  "backend_actually_used": "claude",
+  "model_id": "claude-opus-4-5-20251101",
+  "elapsed_s": 66.39103645901196,
+  "usage": {
+    "input_tokens": 1,
+    "output_tokens": 2644,
+    "cache_read_input_tokens": 0,
+    "cache_creation_input_tokens": 53244,
+    "total_cost_usd": 0.43283130000000003,
+    "tokens_estimated": false
+  }
+}

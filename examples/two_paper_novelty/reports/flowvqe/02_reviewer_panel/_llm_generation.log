@@ -1,0 +1,31 @@
+--- mode: full ---
+--- backend: claude ---
+--- elapsed_s: 109.50 ---
+--- stdout (first 4KB) ---
+# Peer Review Panel: Flow-VQE Manuscript
+
+---
+
+## Voice 1 — Reviewer 1 (Physics correctness)
+
+The manuscript presents a methodologically sound approach to variational quantum eigensolver optimization through normalizing flows. The Hamiltonian construction follows standard procedures: Jordan-Wigner transformation for fermion-to-qubit mapping, active space selections that are physically reasonable ((4e,4o) for H₄, (6e,5o) for H₂O, (6e,6o) for NH₃ and C₆H₆), and appropriate basis sets (STO-3G for the larger molecules, cc-pVDZ for H₄). The choice of Jordan-Wigner over Bravyi-Kitaev or parity mappings is not justified but is defensible given the modest qubit counts (5-12 qubits). The Z₂ symmetry tapering applied to H₄ is correctly implemented and reduces the qubit count from 8 to 5, which is standard practice.
+
+The Hartree-Fock reference initialization strategy is well-motivated. The authors correctly note that HF typically recovers >99.5% of total electronic energy for small closed-shell molecules, making the remaining correlation energy the critical optimization target. The ansatz choices are appropriate: the hardware-efficient RY-linear ansatz for H₄ and Givens-based singles and doubles (GSD) for the other molecules. The GSD ansatz preserves particle number and spin symmetry by construction, which is crucial for chemical accuracy. However, the manuscript does not discuss the expressibility limits of these ansätze in relation to the active spaces chosen—particularly whether the GSD ansatz with 54-117 parameters can capture the full correlation energy within the selected active spaces.
+
+One concern is the absence of discussion regarding numerical precision. The simulations are performed via PennyLane state-vector simulation, but the manuscript does not specify whether complex128 or complex64 precision was used. For stretched geometries where strong correlation effects dominate (e.g., H₄ at 2.6 Å or H₂O at 1.9 Å), numerical precision can significantly affect the computed energies, particularly when comparing against "exact diagonalization at the same level of theory." The claimed computational accuracy threshold of 1.6×10⁻³ Hartree (~1 kcal/mol) is chemically meaningful, but the authors should verify that numerical artifacts do not contaminate their comparisons at this precision level.
+
+The treatment of stretched bond regions deserves additional scrutiny. The authors acknowledge that "energy errors increase in stretched bond-length regions due to strong correlation effects and the limited expressivity of the employed ansätze." This is physically correct, but the manuscript would benefit from quantifying the multireference character (e.g., via T1 diagnostic or natural orbital occupation numbers) to distinguish between ansatz limitations and Flow-VQE performance. Additionally, the equilibrium geometries and bond stretching ranges are reasonable for benchmarking, but the ammonia inversion coordinate and benzene C-H stretch represent different classes of nuclear motion that test different aspects of the PES—this diversity is a strength, but the physical rationale for these choices could be made more explicit.
+
+**Questions for Authors:**
+1. What numerical precision (complex64 vs complex128) was used in the state-vector simulations, and have you verified that precision artifacts do not affect comparisons at the 1.6×10⁻³ Hartree threshold?
+2. Can you provide multireference diagnostics (T1 amplitudes or natural orbital occupations) for the stretched geometries to distinguish ansatz expressibility limitations from optimization performance?
+3. Why was Jordan-Wigner chosen over Bravyi-Kitaev, given that BK can reduce circuit depth for certain ansätze?
+4. For the GSD ansatz, have you verified that 54-117 parameters are sufficient to reach the FCI limit within your active spaces?
+
+**Verdict: 7/10 — Minor Revisions**
+
+---
+
+## Voice 2 — Reviewer 2 (Algorithmic novelty)
+
+The core algorithmic contribution—using conditional normalizing flows trained

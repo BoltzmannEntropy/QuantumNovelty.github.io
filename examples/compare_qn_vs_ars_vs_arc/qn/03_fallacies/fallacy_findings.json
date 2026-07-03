@@ -1,0 +1,44 @@
+{
+  "findings": [
+    {
+      "name": "cherry-picked-baseline",
+      "category": "quantum-cs",
+      "severity": "medium",
+      "location": "Section II.E, Table I, Appendix G",
+      "evidence": "For a fair comparison, we set the 1-norm of all LCU formulas \u00b5 to be constant... We compile their quantum circuits to CNOT gates, single-qubit Clifford gates, and single-qubit Z-axis rotation gates Rz(\u03b8) = ei\u03b8Z. Here, we mainly compare the number of Rz(\u03b8) gates since they are the most resource-consuming part on a fault-tolerant quantum computer.",
+      "suggested_fix": "Include comparisons with additional state-of-the-art methods such as higher-order randomized Trotter methods from Ref. [47] and discuss why certain baselines were omitted. Acknowledge that different methods may be preferable in different parameter regimes."
+    },
+    {
+      "name": "asymptotic-only-claim",
+      "category": "quantum-cs",
+      "severity": "medium",
+      "location": "Theorem 1, Theorem 2, Section IV.C, Section V.C",
+      "evidence": "From Theorem 1 we can see that, by introducing the LCU compensation, the time scaling of the Kth-order Trotter-LCU algorithm improve the bare Kth-order Trotter time scaling from 1 + 1/K to 1 + 1/(2K + 1). Moreover, the accuracy scaling is exponentially improved.",
+      "suggested_fix": "Add explicit crossover analysis showing at what system size, time, or accuracy threshold the asymptotic improvements begin to dominate over constant factors. Provide a table or figure showing the regime of practical advantage."
+    },
+    {
+      "name": "conflated-regimes",
+      "category": "quantum-cs",
+      "severity": "medium",
+      "location": "Section II.E, Figure 8(c), Section VI",
+      "evidence": "From Fig. 8(c), we can see that, while enjoying near-optimal system-size scaling similar to the fourth-order Trotter algorithm which is currently the best one for lattice Hamiltonians, the second-order NCC algorithm shows better accuracy dependence than fourth-order Trotter algorithm. Particularly, using the same gate number as the fourth-order Trotter, we are able to achieve a 3 to 4 orders of magnitude higher accuracy \u03b5.",
+      "suggested_fix": "Explicitly state that numerical demonstrations are limited to small-to-moderate system sizes (n \u2264 50) and discuss how the advantage may scale to larger systems relevant for fault-tolerant quantum computing."
+    },
+    {
+      "name": "hasty-generalization",
+      "category": "general",
+      "severity": "medium",
+      "location": "Abstract, Section VI Conclusion",
+      "evidence": "These algorithms provide an easy-to-implement approach to achieve a low-cost and high-precision Hamiltonian simulation.",
+      "suggested_fix": "Temper the 'easy-to-implement' claim by discussing the classical preprocessing complexity of the sampling procedures, or provide numerical demonstrations for more complex Hamiltonian structures beyond the idealized Heisenberg and 2-local test cases."
+    },
+    {
+      "name": "pareto-cherry-picked-axes",
+      "category": "quantum-cs",
+      "severity": "medium",
+      "location": "Table I, Figures 8, 13-17, Section II.E",
+      "evidence": "In Table I, we compare the implementation complexity and the gate complexity in a single round of experiment of the 0th-order PTSC, Kth-order PTSC, and Kth-order NCC algorithms to previous Hamiltonian simulation algorithms.",
+      "suggested_fix": "Include the \u00b5\u2074 sampling overhead explicitly in complexity comparisons, and present a more comprehensive resource table that includes total sample complexity, classical computation overhead, and ancilla requirements on equal footing with gate counts."
+    }
+  ]
+}

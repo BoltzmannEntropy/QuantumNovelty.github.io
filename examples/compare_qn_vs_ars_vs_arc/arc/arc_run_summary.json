@@ -1,0 +1,23 @@
+{
+  "framework": "ARC",
+  "backend": "claude",
+  "stages": [
+    {
+      "stage_id": "01-peer-review",
+      "stage_name": "peer_review",
+      "rc": 0,
+      "skipped": true
+    },
+    {
+      "stage_id": "02-quality-gate",
+      "stage_name": "quality_gate",
+      "rc": 0,
+      "skipped": false,
+      "elapsed_s": 27.12,
+      "model_id": "claude-haiku-4-5-20251001",
+      "input_tokens": 2,
+      "output_tokens": 980,
+      "total_cost_usd": 0.30673504999999995
+    }
+  ]
+}

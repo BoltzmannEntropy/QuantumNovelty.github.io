@@ -1,0 +1,51 @@
+{
+  "stages": [
+    {
+      "stage": "deep_research",
+      "skill": "deep_research",
+      "rc": 0,
+      "elapsed_s": 0.0,
+      "outdir": "<repo>/examples/end_to_end/two_paper_novelty/_run/reports/lcutrotter/01_research_review",
+      "skipped": true,
+      "notes": [
+        "resumed: stage outputs present"
+      ]
+    },
+    {
+      "stage": "quantum_reviewer",
+      "skill": "quantum_reviewer",
+      "rc": 0,
+      "elapsed_s": 0.0,
+      "outdir": "<repo>/examples/end_to_end/two_paper_novelty/_run/reports/lcutrotter/02_reviewer_panel",
+      "skipped": true,
+      "notes": [
+        "resumed: stage outputs present"
+      ]
+    },
+    {
+      "stage": "logical_fallacies",
+      "skill": "logical_fallacies",
+      "rc": 0,
+      "elapsed_s": 0.0,
+      "outdir": "<repo>/examples/end_to_end/two_paper_novelty/_run/reports/lcutrotter/03_fallacies",
+      "skipped": true,
+      "notes": [
+        "resumed: stage outputs present"
+      ]
+    },
+    {
+      "stage": "process_summary",
+      "skill": "process_summary",
+      "rc": 0,
+      "elapsed_s": 0.0,
+      "outdir": "<repo>/examples/end_to_end/two_paper_novelty/_run/reports/lcutrotter/04_summary",
+      "skipped": true,
+      "notes": [
+        "resumed: stage outputs present"
+      ]
+    }
+  ],
+  "n_stages_run": 0,
+  "n_stages_skipped": 4,
+  "n_failures": 0
+}

@@ -1,0 +1,10 @@
+{
+  "stage_id": "04-cqe",
+  "stage_dir": "04_summary",
+  "duration_sec": 32,
+  "status": "done",
+  "artifacts_count": 3,
+  "error": null,
+  "started_iso": "2026-06-10T11:52:15Z",
+  "ended_iso": "2026-06-10T11:52:47Z"
+}

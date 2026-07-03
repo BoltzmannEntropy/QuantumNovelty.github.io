@@ -1,0 +1,43 @@
+{
+  "score_1_to_10": 6.0,
+  "verdict": "major-revisions",
+  "votes": {
+    "Reviewer 1": {
+      "recommendation": "minor-revisions",
+      "confidence": 7.0
+    },
+    "Reviewer 2": {
+      "recommendation": "major-revisions",
+      "confidence": 6.0
+    },
+    "Reviewer 3": {
+      "recommendation": "major-revisions",
+      "confidence": 7.0
+    },
+    "Devil's Advocate": {
+      "recommendation": "reject",
+      "confidence": 8.0
+    },
+    "Editor-in-Chief": {
+      "recommendation": "major-revisions",
+      "confidence": 8.0
+    }
+  },
+  "per_voice_scores": [
+    7.0,
+    6.0,
+    5.0
+  ],
+  "threshold": 7.0,
+  "passes_threshold": false,
+  "required_actions": [
+    "Provide an explicit, detailed comparison with Ref. [47] (Cho, Berry, Hsieh), establishing precisely which algorithmic elements are shared, which are novel, and quantifying relative performance where applicable.",
+    "Revise the resource comparison methodology to include either (a) empirical Trotter error estimates for the test Hamiltonians to match the precision of the LCU formula construction, or (b) analytical bounds for both methods computed using the same framework.",
+    "Present total resource counts including sampling overhead prominently in the main text, either as separate figures or as multipliers applied to the single-shot counts.",
+    "Add a Failure Modes section discussing regimes where the approach performs poorly, including quantitative guidance on the (n, L, t, \u03b5) parameter crossovers.",
+    "Clarify boundary condition assumptions throughout the lattice Hamiltonian analysis and state explicitly that the NCC complexity bounds apply to one-dimensional systems.",
+    "Provide a reproducibility package (code repository or supplementary materials) containing the scripts and data files necessary to regenerate all numerical results.",
+    "Add variance or confidence interval estimates to the gate count results, or justify why the quantities reported are deterministic."
+  ],
+  "source": "deterministic parse of review_panel.md (ARC quality_gate shape; no extra LLM call)"
+}

@@ -1,0 +1,17 @@
+{
+  "stage_id": "06-editorial-synth",
+  "framework": "ARS",
+  "agent": "editorial_synthesizer_agent.md",
+  "backend_requested": "claude",
+  "backend_actually_used": "claude",
+  "model_id": "claude-haiku-4-5-20251001",
+  "elapsed_s": 91.36704754200764,
+  "usage": {
+    "input_tokens": 1,
+    "output_tokens": 3754,
+    "cache_read_input_tokens": 0,
+    "cache_creation_input_tokens": 69865,
+    "total_cost_usd": 0.56481755,
+    "tokens_estimated": false
+  }
+}

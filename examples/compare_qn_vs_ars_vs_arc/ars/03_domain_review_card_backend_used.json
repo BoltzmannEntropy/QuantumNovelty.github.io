@@ -1,0 +1,17 @@
+{
+  "stage_id": "03-domain",
+  "framework": "ARS",
+  "agent": "domain_reviewer_agent.md",
+  "backend_requested": "claude",
+  "backend_actually_used": "claude",
+  "model_id": "claude-haiku-4-5-20251001",
+  "elapsed_s": 67.5413324580295,
+  "usage": {
+    "input_tokens": 1,
+    "output_tokens": 2759,
+    "cache_read_input_tokens": 0,
+    "cache_creation_input_tokens": 53183,
+    "total_cost_usd": 0.43433004999999997,
+    "tokens_estimated": false
+  }
+}

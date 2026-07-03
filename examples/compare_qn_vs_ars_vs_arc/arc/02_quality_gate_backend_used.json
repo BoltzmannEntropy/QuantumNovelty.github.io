@@ -1,0 +1,17 @@
+{
+  "stage_id": "02-quality-gate",
+  "framework": "ARC",
+  "stage_name": "quality_gate",
+  "backend_requested": "claude",
+  "backend_actually_used": "claude",
+  "model_id": "claude-haiku-4-5-20251001",
+  "elapsed_s": 27.116231042076834,
+  "usage": {
+    "input_tokens": 2,
+    "output_tokens": 980,
+    "cache_read_input_tokens": 0,
+    "cache_creation_input_tokens": 39887,
+    "total_cost_usd": 0.30673504999999995,
+    "tokens_estimated": false
+  }
+}

@@ -1,0 +1,142 @@
+[
+  {
+    "decision": "proceed",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:42:03+00:00"
+  },
+  {
+    "decision": "proceed",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:44:05+00:00"
+  },
+  {
+    "decision": "fail",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:44:05+00:00"
+  },
+  {
+    "decision": "fail",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:44:05+00:00"
+  },
+  {
+    "decision": "fail",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:44:05+00:00"
+  },
+  {
+    "decision": "proceed",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:46:12+00:00"
+  },
+  {
+    "decision": "proceed",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:46:12+00:00"
+  },
+  {
+    "decision": "proceed",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:46:12+00:00"
+  },
+  {
+    "decision": "proceed",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:46:12+00:00"
+  },
+  {
+    "decision": "proceed",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:46:12+00:00"
+  },
+  {
+    "decision": "proceed",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:46:46+00:00"
+  },
+  {
+    "decision": "proceed",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:46:46+00:00"
+  },
+  {
+    "decision": "proceed",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:47:31+00:00"
+  },
+  {
+    "decision": "proceed",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:48:03+00:00"
+  },
+  {
+    "decision": "proceed",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:48:03+00:00"
+  },
+  {
+    "decision": "proceed",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:52:47+00:00"
+  },
+  {
+    "decision": "proceed",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:52:47+00:00"
+  },
+  {
+    "decision": "proceed",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:52:47+00:00"
+  },
+  {
+    "decision": "proceed",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:52:47+00:00"
+  },
+  {
+    "decision": "proceed",
+    "rollback_target": null,
+    "rollback_stage_num": 0,
+    "attempt": 1,
+    "timestamp": "2026-06-10T11:52:47+00:00"
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "stage_id": "01-research",
+  "stage_dir": "01_research_review",
+  "duration_sec": 39,
+  "status": "done",
+  "artifacts_count": 4,
+  "error": null,
+  "started_iso": "2026-06-10T12:44:49Z",
+  "ended_iso": "2026-06-10T12:45:28Z"
+}

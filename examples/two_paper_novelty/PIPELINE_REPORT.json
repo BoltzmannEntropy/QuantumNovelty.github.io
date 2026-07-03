@@ -1,0 +1,486 @@
+{
+  "paper_a": {
+    "stages": [
+      {
+        "stage": "01_research_review",
+        "label": "Deep-research review",
+        "desc": "Audit-and-falsify checklist scored against the paper text. Each item is PASS / PARTIAL / FAIL / NOT-APPLICABLE with one-line evidence.",
+        "missing": false,
+        "model_id": "claude-haiku-4-5-20251001",
+        "backend": "claude",
+        "elapsed_s": 38.04,
+        "input_tokens": 1,
+        "output_tokens": 1318,
+        "cache_read_input_tokens": 17879,
+        "cache_creation_input_tokens": 29093,
+        "cost_usd": 0.25805705,
+        "estimated": false
+      },
+      {
+        "stage": "02_reviewer_panel",
+        "label": "Reviewer panel \u2014 5 voices",
+        "desc": "Editor-in-Chief + Reviewer 1 (Physics) + Reviewer 2 (Novelty) + Reviewer 3 (Evidence) + Devil's Advocate. Each voice produces a verdict; the EIC reconciles.",
+        "missing": false,
+        "model_id": "claude-haiku-4-5-20251001",
+        "backend": "claude",
+        "elapsed_s": 109.501,
+        "input_tokens": 1,
+        "output_tokens": 4646,
+        "cache_read_input_tokens": 17879,
+        "cache_creation_input_tokens": 29388,
+        "cost_usd": 0.3421308,
+        "estimated": false
+      },
+      {
+        "stage": "03_fallacies",
+        "label": "Logical-fallacy report",
+        "desc": "Standard fallacies plus 11 quantum-CS-specific (cherry-picked-baseline, ad-hoc-precision-floor, simulator-laundering, pareto-cherry-picked-axes, cross-llm-theatre, \u2026). Severity threshold: medium.",
+        "missing": false,
+        "model_id": "claude-haiku-4-5-20251001",
+        "backend": "claude",
+        "elapsed_s": 52.796,
+        "input_tokens": 1,
+        "output_tokens": 2863,
+        "cache_read_input_tokens": 17879,
+        "cache_creation_input_tokens": 28982,
+        "cost_usd": 0.29548830000000004,
+        "estimated": false
+      },
+      {
+        "stage": "04_summary",
+        "label": "Stage-6 CQE narrative",
+        "desc": "6-dim Collaboration Quality Evaluation with geometric-mean composite.",
+        "missing": false,
+        "model_id": "claude-opus-4-5-20251101",
+        "backend": "claude",
+        "elapsed_s": 31.659,
+        "input_tokens": 2,
+        "output_tokens": 1180,
+        "cache_read_input_tokens": 19170,
+        "cache_creation_input_tokens": 0,
+        "cost_usd": 0.0721213,
+        "estimated": false
+      }
+    ],
+    "totals": {
+      "input_tokens": 5,
+      "output_tokens": 10007,
+      "cache_read_input_tokens": 72807,
+      "cache_creation_input_tokens": 87463,
+      "cost_usd": 0.96779745,
+      "elapsed_s": 231.99599999999998
+    },
+    "cqe": {
+      "composite": 23,
+      "composite_method": "geometric_mean",
+      "dimensions": [
+        {
+          "name": "Novelty rigour",
+          "score": 8,
+          "probes": [
+            {
+              "name": "augmented baseline catalog present",
+              "score": 10,
+              "evidence": "baseline_catalog has 0 rows"
+            },
+            {
+              "name": "strict-domination comparator run",
+              "score": 5,
+              "evidence": "novelty_verdict.json not found"
+            }
+          ]
+        },
+        {
+          "name": "Reproducibility",
+          "score": 20,
+          "probes": [
+            {
+              "name": "audit_claims.py emitted",
+              "score": 10,
+              "evidence": "file exists: False"
+            },
+            {
+              "name": "paper draft on disk",
+              "score": 30,
+              "evidence": "paper.tex exists: False"
+            },
+            {
+              "name": "pareto archive structured",
+              "score": 20,
+              "evidence": "archive rows: 0"
+            }
+          ]
+        },
+        {
+          "name": "Methodological rigour",
+          "score": 27,
+          "probes": [
+            {
+              "name": "Wilson CIs computed",
+              "score": 20,
+              "evidence": "wilson_annotations.md: False"
+            },
+            {
+              "name": "ablation results present",
+              "score": 30,
+              "evidence": "ablation_results.json: False"
+            },
+            {
+              "name": "ratio recompute pass run",
+              "score": 30,
+              "evidence": "ratio_recompute.md: False"
+            }
+          ]
+        },
+        {
+          "name": "Falsifiability",
+          "score": 30,
+          "probes": [
+            {
+              "name": "cross-LLM with multiple vendors",
+              "score": 40,
+              "evidence": "vendors used: []"
+            },
+            {
+              "name": "honest negatives surfaced",
+              "score": 20,
+              "evidence": "failure-modes section in draft: False; audit required them: False"
+            }
+          ]
+        },
+        {
+          "name": "Domain depth",
+          "score": 30,
+          "probes": [
+            {
+              "name": "active space stated explicitly",
+              "score": 30,
+              "evidence": "explicit active-space text found: False"
+            },
+            {
+              "name": "fermion-to-qubit mapping stated",
+              "score": 30,
+              "evidence": "mapping reference found: False"
+            },
+            {
+              "name": "simulator precision floor disclosed",
+              "score": 30,
+              "evidence": "precision-floor reference found: False"
+            }
+          ]
+        },
+        {
+          "name": "Communication",
+          "score": 40,
+          "probes": [
+            {
+              "name": "logical fallacies absent",
+              "score": 40,
+              "evidence": "logical_fallacies skill not run"
+            },
+            {
+              "name": "reviewer panel verdict",
+              "score": 40,
+              "evidence": "no review_panel.md found"
+            }
+          ]
+        }
+      ]
+    },
+    "fallacies": {
+      "findings": [
+        {
+          "name": "cherry-picked-baseline",
+          "category": "quantum-cs",
+          "severity": "high",
+          "location": "Section I (Introduction) and Section V.A (Single-molecule optimization)",
+          "evidence": "We compare Flow-VQE to a number of standard benchmarks through numerical simulations... We find that Flow-VQE outperforms baseline optimization algorithms",
+          "suggested_fix": "Include direct numerical comparisons with at least one published warm-start or ML-based VQE initialization method (e.g., FLIP, meta-VQE, or supervised learning approaches cited in references 32-44) on the same molecular systems, or explicitly acknowledge this gap as a limitation."
+        },
+        {
+          "name": "conflated-regimes",
+          "category": "quantum-cs",
+          "severity": "high",
+          "location": "Section I (Introduction) and Section VI (Limitations and Future Work)",
+          "evidence": "While the numerical experiments reported here extend only to 12-qubit active spaces and 117 variational parameters, several features of Flow-VQE promise broad quantum-resource savings, even when scaling to larger molecules.",
+          "suggested_fix": "Replace 'promise broad quantum-resource savings' with 'may potentially offer resource savings pending empirical validation at larger scales' and explicitly acknowledge that scaling behavior remains uncharacterized."
+        },
+        {
+          "name": "hasty-generalization",
+          "category": "general",
+          "severity": "medium",
+          "location": "Section V.C (Estimate of cost advantage)",
+          "evidence": "For NH3, standard VQE requires an average of C\u0304VQE = 5,265 circuit evaluations per test point... These estimates are instance-dependent and not intended as universal benchmarks, but they illustrate the practical advantages of Flow-VQE-M",
+          "suggested_fix": "Explicitly state that cost advantage calculations are illustrative examples from a narrow test set (2 molecules, 4 configurations each) and should not be extrapolated to other molecular systems without further validation."
+        },
+        {
+          "name": "active-space-handwave",
+          "category": "quantum-cs",
+          "severity": "medium",
+          "location": "Section IV.A.1 (Electronic structure modeling) and Section VII (Conclusion)",
+          "evidence": "For active-space selections, we perform them to manage computational complexity while preserving essential electronic structure features: (4e, 4o) for H4, (6e, 5o) for H2O, (6e, 6o) for NH3, and (6e, 6o) for C6H6",
+          "suggested_fix": "Add justification for specific active space choices and acknowledge that performance on larger, chemically realistic active spaces remains untested. State that these are minimal proof-of-concept calculations."
+        },
+        {
+          "name": "hardware-irrelevant-comparison",
+          "category": "quantum-cs",
+          "severity": "medium",
+          "location": "Section IV (Numerical Simulations)",
+          "evidence": "We empirically validate Flow-VQE through state-vector simulation experiments on various quantum chemical systems",
+          "suggested_fix": "Either include noisy simulations with realistic noise models, or add explicit caveat: 'All experiments were conducted under ideal noiseless conditions; performance under realistic hardware noise remains to be characterized.'"
+        },
+        {
+          "name": "asymptotic-only-claim",
+          "category": "quantum-cs",
+          "severity": "medium",
+          "location": "Section VI (Limitations and Future Work)",
+          "evidence": "On the classical side, the classical overhead in modern normalizing-flow architectures scales linearly in d, keeping training and inference practical even as d reaches the tens of thousands",
+          "suggested_fix": "Explicitly note this is a theoretical expectation validated only up to d=117: 'While normalizing flow architectures theoretically scale linearly in d, we have only validated this up to d=117 in the present work.'"
+        },
+        {
+          "name": "unit-inflation",
+          "category": "quantum-cs",
+          "severity": "medium",
+          "location": "Section I (Abstract) and Section V (Results)",
+          "evidence": "improvements range from modest to more than two orders of magnitude... up to 50-fold compared with Hartree\u2013Fock initialization",
+          "suggested_fix": "Report median or geometric mean improvements alongside maximum values. Replace 'up to 50-fold' with specific ranges and conditions under which maximum improvements are achieved."
+        }
+      ]
+    },
+    "reviewer_verdict": "Major Revisions"
+  },
+  "paper_b": {
+    "stages": [
+      {
+        "stage": "01_research_review",
+        "label": "Deep-research review",
+        "desc": "Audit-and-falsify checklist scored against the paper text. Each item is PASS / PARTIAL / FAIL / NOT-APPLICABLE with one-line evidence.",
+        "missing": false,
+        "model_id": "claude-opus-4-5-20251101",
+        "backend": "claude",
+        "elapsed_s": 36.502,
+        "input_tokens": 1,
+        "output_tokens": 1336,
+        "cache_read_input_tokens": 17879,
+        "cache_creation_input_tokens": 48411,
+        "cost_usd": 0.37902455,
+        "estimated": false
+      },
+      {
+        "stage": "02_reviewer_panel",
+        "label": "Reviewer panel \u2014 5 voices",
+        "desc": "Editor-in-Chief + Reviewer 1 (Physics) + Reviewer 2 (Novelty) + Reviewer 3 (Evidence) + Devil's Advocate. Each voice produces a verdict; the EIC reconciles.",
+        "missing": false,
+        "model_id": "claude-haiku-4-5-20251001",
+        "backend": "claude",
+        "elapsed_s": 121.981,
+        "input_tokens": 1,
+        "output_tokens": 5293,
+        "cache_read_input_tokens": 17879,
+        "cache_creation_input_tokens": 96207,
+        "cost_usd": 0.7757445499999999,
+        "estimated": false
+      },
+      {
+        "stage": "03_fallacies",
+        "label": "Logical-fallacy report",
+        "desc": "Standard fallacies plus 11 quantum-CS-specific (cherry-picked-baseline, ad-hoc-precision-floor, simulator-laundering, pareto-cherry-picked-axes, cross-llm-theatre, \u2026). Severity threshold: medium.",
+        "missing": false,
+        "model_id": "claude-opus-4-5-20251101",
+        "backend": "claude",
+        "elapsed_s": 45.388,
+        "input_tokens": 1,
+        "output_tokens": 2348,
+        "cache_read_input_tokens": 17879,
+        "cache_creation_input_tokens": 95837,
+        "cost_usd": 0.70118705,
+        "estimated": false
+      },
+      {
+        "stage": "04_summary",
+        "label": "Stage-6 CQE narrative",
+        "desc": "6-dim Collaboration Quality Evaluation with geometric-mean composite.",
+        "missing": false,
+        "model_id": "claude-haiku-4-5-20251001",
+        "backend": "claude",
+        "elapsed_s": 31.887,
+        "input_tokens": 2,
+        "output_tokens": 1195,
+        "cache_read_input_tokens": 17879,
+        "cache_creation_input_tokens": 1291,
+        "cost_usd": 0.08057955,
+        "estimated": false
+      }
+    ],
+    "totals": {
+      "input_tokens": 5,
+      "output_tokens": 10172,
+      "cache_read_input_tokens": 71516,
+      "cache_creation_input_tokens": 241746,
+      "cost_usd": 1.9365356999999999,
+      "elapsed_s": 235.758
+    },
+    "cqe": {
+      "composite": 23,
+      "composite_method": "geometric_mean",
+      "dimensions": [
+        {
+          "name": "Novelty rigour",
+          "score": 8,
+          "probes": [
+            {
+              "name": "augmented baseline catalog present",
+              "score": 10,
+              "evidence": "baseline_catalog has 0 rows"
+            },
+            {
+              "name": "strict-domination comparator run",
+              "score": 5,
+              "evidence": "novelty_verdict.json not found"
+            }
+          ]
+        },
+        {
+          "name": "Reproducibility",
+          "score": 20,
+          "probes": [
+            {
+              "name": "audit_claims.py emitted",
+              "score": 10,
+              "evidence": "file exists: False"
+            },
+            {
+              "name": "paper draft on disk",
+              "score": 30,
+              "evidence": "paper.tex exists: False"
+            },
+            {
+              "name": "pareto archive structured",
+              "score": 20,
+              "evidence": "archive rows: 0"
+            }
+          ]
+        },
+        {
+          "name": "Methodological rigour",
+          "score": 27,
+          "probes": [
+            {
+              "name": "Wilson CIs computed",
+              "score": 20,
+              "evidence": "wilson_annotations.md: False"
+            },
+            {
+              "name": "ablation results present",
+              "score": 30,
+              "evidence": "ablation_results.json: False"
+            },
+            {
+              "name": "ratio recompute pass run",
+              "score": 30,
+              "evidence": "ratio_recompute.md: False"
+            }
+          ]
+        },
+        {
+          "name": "Falsifiability",
+          "score": 30,
+          "probes": [
+            {
+              "name": "cross-LLM with multiple vendors",
+              "score": 40,
+              "evidence": "vendors used: []"
+            },
+            {
+              "name": "honest negatives surfaced",
+              "score": 20,
+              "evidence": "failure-modes section in draft: False; audit required them: False"
+            }
+          ]
+        },
+        {
+          "name": "Domain depth",
+          "score": 30,
+          "probes": [
+            {
+              "name": "active space stated explicitly",
+              "score": 30,
+              "evidence": "explicit active-space text found: False"
+            },
+            {
+              "name": "fermion-to-qubit mapping stated",
+              "score": 30,
+              "evidence": "mapping reference found: False"
+            },
+            {
+              "name": "simulator precision floor disclosed",
+              "score": 30,
+              "evidence": "precision-floor reference found: False"
+            }
+          ]
+        },
+        {
+          "name": "Communication",
+          "score": 40,
+          "probes": [
+            {
+              "name": "logical fallacies absent",
+              "score": 40,
+              "evidence": "logical_fallacies skill not run"
+            },
+            {
+              "name": "reviewer panel verdict",
+              "score": 40,
+              "evidence": "no review_panel.md found"
+            }
+          ]
+        }
+      ]
+    },
+    "fallacies": {
+      "findings": [
+        {
+          "name": "cherry-picked-baseline",
+          "category": "quantum-cs",
+          "severity": "medium",
+          "location": "Section I (Introduction), paragraph 3; Table I",
+          "evidence": "Consequently, for instance, for n-qubit lattice Hamiltonians, their gate complexities are O(n\u00b2), which is worse than those in Trotter algorithms O(n^{1+o(1)}).",
+          "suggested_fix": "Acknowledge that post-Trotter methods can also be improved with commutator-aware implementations, and clarify that the O(n\u00b2) scaling applies to standard implementations without such optimizations."
+        },
+        {
+          "name": "asymptotic-only-claim",
+          "category": "quantum-cs",
+          "severity": "medium",
+          "location": "Section II.E (Performance comparison); Theorem 1 and Theorem 2",
+          "evidence": "the gate complexity of random-sampling Kth-order Trotter-LCU algorithm... is O(n^{1+2/(2K+1)} t^{1+1/(2K+1)} \u03b5^{-1/(2K+1)})",
+          "suggested_fix": "Include explicit analysis of crossover points where asymptotic improvements manifest; acknowledge that constant factors may dominate at practical scales."
+        },
+        {
+          "name": "conflated-regimes",
+          "category": "quantum-cs",
+          "severity": "medium",
+          "location": "Section II.E, Figure 8(a,b) and surrounding discussion",
+          "evidence": "For a generic Hamiltonian, the estimated gate counts of the first algorithm can be 2 orders of magnitude smaller than the best analytical bound of fourth-order Trotter formula.",
+          "suggested_fix": "Qualify that the 2-order improvement is demonstrated for the specific 2-local model with uniform couplings; note that performance on other Hamiltonians may vary."
+        },
+        {
+          "name": "hasty-generalization",
+          "category": "general",
+          "severity": "medium",
+          "location": "Section VI (Conclusion), paragraph 1",
+          "evidence": "we show that the 0th-order paired Taylor-series compensation (PTSC) algorithm, 2kth-order PTSC algorithm and the 2kth-order nested-commutator compensation (NCC) algorithm enjoy different advantages and will be useful in different scenarios",
+          "suggested_fix": "Temper the conclusion by noting the limited scope of numerical validation; state that further benchmarking on other Hamiltonian classes is needed to confirm recommendations."
+        },
+        {
+          "name": "ad-hoc-precision-floor",
+          "category": "quantum-cs",
+          "severity": "medium",
+          "location": "Section II.E, Figure 8(c)",
+          "evidence": "Particularly, using the same gate number as the fourth-order Trotter, we are able to achieve a 3 to 4 orders of magnitudes higher accuracy \u03b5.",
+          "suggested_fix": "Clarify that accuracy comparison is between analytical error bounds assuming perfect implementation; acknowledge that achieving such precision requires accounting for the \u00b5^4 sampling overhead."
+        }
+      ]
+    },
+    "reviewer_verdict": "minor-revisions"
+  }
+}

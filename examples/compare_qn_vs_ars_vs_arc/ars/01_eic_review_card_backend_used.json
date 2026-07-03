@@ -1,0 +1,17 @@
+{
+  "stage_id": "01-eic",
+  "framework": "ARS",
+  "agent": "eic_agent.md",
+  "backend_requested": "claude",
+  "backend_actually_used": "claude",
+  "model_id": "claude-haiku-4-5-20251001",
+  "elapsed_s": 62.77151154191233,
+  "usage": {
+    "input_tokens": 1,
+    "output_tokens": 2601,
+    "cache_read_input_tokens": 0,
+    "cache_creation_input_tokens": 52152,
+    "total_cost_usd": 0.4248113,
+    "tokens_estimated": false
+  }
+}

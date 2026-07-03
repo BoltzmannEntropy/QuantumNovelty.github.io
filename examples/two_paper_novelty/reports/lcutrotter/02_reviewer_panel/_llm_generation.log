@@ -1,0 +1,29 @@
+--- mode: full ---
+--- backend: claude ---
+--- elapsed_s: 121.98 ---
+--- stdout (first 4KB) ---
+# Peer Review Panel: PRX Quantum Submission
+
+## Paper: "Simple and high-precision Hamiltonian simulation by compensating Trotter error with linear combination of unitary operations"
+
+---
+
+## Voice 1 — Reviewer 1 (Physics correctness)
+
+The manuscript presents a compelling theoretical framework for combining Trotter formulas with linear combination of unitaries (LCU) to achieve improved Hamiltonian simulation performance. From a physics correctness standpoint, the core mathematical construction appears sound. The authors correctly identify that the Kth-order Trotter remainder $V_K(x) = U(x)S_K(x)^\dagger$ satisfies the order condition $V_K(x) = I + O(x^{K+1})$, and their subsequent Taylor expansion and pairing strategy exploits this property appropriately. The use of Euler's formula (Eq. 7) to convert anti-Hermitian leading-order terms into Pauli rotations with suppressed 1-norm is mathematically elegant and correctly executed.
+
+However, I have concerns regarding the treatment of specific physical Hamiltonians beyond the abstract lattice model. While the authors claim their method applies to "quantum chemistry Hamiltonians with large L," the paper provides no concrete analysis for molecular systems where the Hamiltonian structure differs significantly from the nearest-neighbor lattice models analyzed in detail. The nested-commutator bounds in Proposition 7 rely critically on the locality structure—specifically that $[H_{j,j+1}, H_{k,k+1}] = 0$ when $|j-k| > 1$. For electronic structure Hamiltonians in second quantization, the commutator structure is far more complex due to the non-local Coulomb integrals. The claim that "0th-order PTSC is particularly useful for quantum chemistry" (page 5) requires explicit verification beyond the $L$-dependence argument. The gate complexity $O(\lambda t)^2$ for 0th-order PTSC may be competitive for small $t$, but quantum chemistry simulations often require $t \sim 10^3$ for phase estimation, where the quadratic scaling becomes prohibitive.
+
+The treatment of numerical precision is adequate for the theoretical framework but incomplete for practical implementation. The random-sampling implementation relies on Proposition 1, which bounds the estimation error as $|Ô - \langle O \rangle_V| \leq \|O\|(3\epsilon + \epsilon_n)$ with sample complexity $N = 2\mu^4 \ln(2/\delta)/\epsilon_n^2$. The $\mu^4$ prefactor when $\mu = 2$ implies a 16× overhead compared to standard sampling—this is stated but its implications for practical circuits deserve more attention. Furthermore, the truncation order $s_c$ in Eq. (48) and (76) introduces systematic bias that depends on $\lambda x$ and the specific Hamiltonian; the authors provide asymptotic bounds but no finite-precision error analysis for realistic parameter regimes.
+
+The comparison with fourth-order Trotter in Fig. 8 is physically meaningful, but I note the comparison uses analytical bounds from Ref. [12] rather than empirical tight bounds. For the Heisenberg model, tighter commutator-aware bounds exist (Proposition M.1 in Ref. [20]), which the authors do use for the NCC comparison. The asymmetry in bound tightness between the PTSC and Trotter comparisons may overstate the PTSC advantage. Additionally, the "2 orders of magnitude" improvement claim for PTSC (Abstract) relies on comparing against analytical fourth-order Trotter bounds, which are known to be loose by factors of 10-100× in practice.
+
+**Verdict: 7/10**
+
+**Recommendation: minor-revisions**
+
+**Questions for Authors:**
+1. Can you provide explicit nested-commutator bounds for a molecular Hamiltonian (e.g., H₂ in STO-3G basis) to validate the claim that PTSC is "particularly useful for quantum chemistry"?
+2. How does the systematic truncation error at finite $s_c$ compare to the statistical sampling error for realistic parameter choices?
+3. Would tighter empirical Trotter bounds (rather than analytical bounds from Ref. [12]) change the claimed improvement factors in Fig. 8(a,b)?
+4. What is the expecte

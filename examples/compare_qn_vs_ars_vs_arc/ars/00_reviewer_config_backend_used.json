@@ -1,0 +1,17 @@
+{
+  "stage_id": "00-field-analyst",
+  "framework": "ARS",
+  "agent": "field_analyst_agent.md",
+  "backend_requested": "claude",
+  "backend_actually_used": "claude",
+  "model_id": "claude-haiku-4-5-20251001",
+  "elapsed_s": 53.60513441695366,
+  "usage": {
+    "input_tokens": 1,
+    "output_tokens": 2141,
+    "cache_read_input_tokens": 0,
+    "cache_creation_input_tokens": 51568,
+    "total_cost_usd": 0.40920130000000005,
+    "tokens_estimated": false
+  }
+}

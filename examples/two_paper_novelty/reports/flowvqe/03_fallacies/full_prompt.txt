@@ -1,0 +1,1344 @@
+# Logical-fallacy audit of a quantum-computing paper
+
+You are auditing the manuscript below for logical fallacies, using the
+extended taxonomy QuantumNovelty maintains for quantum-CS work.
+
+## Severity threshold
+Report findings with severity at or above: **medium**.
+
+## Taxonomy (use these EXACT category names in the JSON output)
+
+### General fallacies
+- circular-reasoning
+- appeal-to-authority
+- post-hoc-ergo-propter-hoc
+- slippery-slope
+- false-dichotomy
+- hasty-generalization
+- straw-man
+- equivocation
+- ad-hominem
+- affirming-the-consequent
+- denying-the-antecedent
+
+### Quantum-CS-specific (NEW — apply these aggressively)
+- cherry-picked-baseline — comparing against a weak baseline while ignoring
+  a stronger published method on the same Hamiltonian
+- ad-hoc-precision-floor — quoting energy diff at sub-noise precision
+- conflated-regimes — extrapolating from small Hamiltonians to large
+- active-space-handwave — claiming generalisation without running it
+- hardware-irrelevant-comparison — simulator vs hardware without noise calibration
+- asymptotic-only-claim — N→∞ claim with finite-N demonstration
+- unit-inflation — choosing units to inflate apparent magnitude
+- simulator-laundering — discover on lib A, evaluate on lib B, conflate
+- mapping-by-convenience — JW/BK/parity chosen for cosmetics, not science
+- pareto-cherry-picked-axes — domination claimed on a chosen axis subset
+- cross-llm-theatre — same-vendor snapshots dressed up as multi-model
+
+## Manuscript
+
+```
+                                                    Generative flow-based warm start of the variational quantum eigensolver
+
+                                                                    Hang Zou,1 Martin Rahm,2 Anton Frisk Kockum,3 and Simon Olsson1, ∗
+                                                                              1
+                                                                                Department of Computer Science and Engineering,
+                                                          Chalmers University of Technology and University of Gothenburg, 41296 Gothenburg, Sweden
+                                                                            2
+                                                                              Department of Chemistry and Chemical Engineering,
+                                                                       Chalmers University of Technology, 41296 Gothenburg, Sweden
+                                                                                3
+                                                                                  Department of Microtechnology and Nanoscience,
+                                                                       Chalmers University of Technology, 41296 Gothenburg, Sweden
+                                                                                           (Dated: September 8, 2025)
+                                                           Hybrid quantum-classical algorithms like the variational quantum eigensolver (VQE) show
+                                                        promise for quantum simulations on near-term quantum devices, but are often limited by complex
+                                                        objective functions and expensive optimization procedures. Here, we propose Flow-VQE, a gener-
+                                                        ative framework leveraging conditional normalizing flows with parameterized quantum circuits to
+                                                        efficiently generate high-quality variational parameters. By embedding a generative model into the
+arXiv:2507.01726v1 [quant-ph] 2 Jul 2025
+
+
+
+
+                                                        VQE optimization loop through preference-based training, Flow-VQE enables quantum gradient-
+                                                        free optimization and offers a systematic approach for parameter transfer, accelerating convergence
+                                                        across related problems through warm-started optimization. We compare Flow-VQE to a number
+                                                        of standard benchmarks through numerical simulations on molecular systems, including hydrogen
+                                                        chains, water, ammonia, and benzene. We find that Flow-VQE outperforms baseline optimization
+                                                        algorithms, achieving computational accuracy with fewer circuit evaluations (improvements range
+                                                        from modest to more than two orders of magnitude) and, when used to warm-start the optimization
+                                                        of new systems, accelerates subsequent fine-tuning by up to 50-fold compared with Hartree–Fock
+                                                        initialization. Therefore, we believe Flow-VQE can become a pragmatic and versatile paradigm for
+                                                        leveraging generative modeling to reduce the costs of variational quantum algorithms.
+
+
+                                                            I.   INTRODUCTION                              ods incur considerable overhead from quantum gradient
+                                                                                                           estimation [15–17], whereas gradient-free methods typ-
+                                              The advent of noisy intermediate-scale quantum               ically require even more queries and scale poorly with
+                                           (NISQ) [1] computers [2–4] has spurred significant in-          increasing parameter dimensionality [18, 19]. Further-
+                                           terest in hybrid quantum-classical algorithms [5–8] that        more, conventional optimization procedures tend to fo-
+                                           can leverage current quantum hardware capabilities while        cus on isolated optimal parameter configurations, and
+                                           mitigating their limitations using conventional computa-        thus may not fully exploit the underlying structure of
+                                           tion. Among them, the variational quantum eigensolver           the parameter landscape, which can limit their capacity
+                                           (VQE) [6, 9] is a widely adopted approach that uses pa-         for transferring knowledge between related tasks.
+                                           rameterized quantum circuits, together with classical op-          One promising strategy to address these challenges
+                                           timization of the parameters, to approximate the ground         is the use of warm-start techniques, which aim to ini-
+                                           state of a many-body Hamiltonian. Although VQE does             tialize optimization with informed guesses positioned
+                                           not overcome the worst-case computational complexity            within advantageous regions of the optimization land-
+                                           of quantum simulation — unstructured variational opti-          scape, rather than random configurations. One class of
+                                           mization is NP-hard [10] — it remains a promising heuris-       methods focuses on encoding prior knowledge into initial
+                                           tic framework, combining physically motivated ansätze,         quantum states, for example, by leveraging chemistry-
+                                           initialization schemes, and optimization strategies, whose      inspired solutions [20, 21] or biased state preparation in-
+                                           practical value warrants continued investigation [6, 11].       formed by classical algorithms [22–25], thereby steering
+                                           Here, we propose a machine learning approach for learn-         the search toward physically meaningful regions of the
+                                           ing the distribution of good variational parameters and         Hilbert space. Complementary strategies aim to initial-
+                                           producing promising initial parameter guesses, taking           ize variational parameters through parameter transfer,
+                                           into account physical information about the system.             reusing parameters obtained from previously solved or
+                                              A major challenge of variational quantum algorithms          structurally related problems to increase the likelihood
+                                           is that the optimization landscape is typically highly          that new instances are initialized within a favorable train-
+                                           nonconvex and noisy.        Phenomena such as barren            ing region [26–31].
+                                           plateaus [12, 13] and the proliferation of local minima [14]
+                                           substantially hinder convergence, often necessitating a            Building on the success of heuristic warm-start meth-
+                                           large number of quantum circuit evaluations to achieve          ods, recent efforts have increasingly explored machine
+                                           acceptable accuracy. Gradient-based optimization meth-          learning-based approaches that aim to enhance flexibility
+                                                                                                           and applicability across diverse problem settings. Mod-
+                                                                                                           els trained on precomputed quantum data have been em-
+                                                                                                           ployed to produce effective initial parameters through su-
+                                           ∗ simonols@chalmers.se
+                                                                                                           pervised learning [32, 33] and generative modeling [34,
+                                                                                                                            2
+
+35], enabling generalization to unseen problem instances       warm starts. We discuss practical limitations and av-
+while supporting extremely fast sampling during infer-         enues for future improvement in Sec. VI and conclude in
+ence. In parallel, emerging data-free paradigms integrate      Sec. VII.
+machine learning models directly into the quantum opti-
+mization loop to provide dynamic guidance and modify
+the cost landscape [36–39]. Extending this idea, meta-                           II.    BACKGROUND
+learning frameworks train across a distribution of tasks
+to acquire generalizable optimization behaviors. Rather          In this section, we first provide a concise recap of
+than fitting solutions, meta-learners directly interact        the VQE framework. We then review normalizing flows,
+with optimization trajectories during training, progres-       showing how to use them for data-distribution learning
+sively distilling shared initialization strategies from mul-   and sample generation. Finally, we introduce a bench-
+tiple tasks to enable rapid adaptation to new struc-           mark parameter-transfer technique that leverages geo-
+tures [40–44].                                                 metric proximity to accelerate VQE convergence.
+   In this article, we introduce Flow-VQE, a probabilistic
+framework that learns the distribution of “high-quality”
+variational parameters that yield low-energy quantum                    A.   Variational quantum eigensolver
+states. By modeling this distribution, Flow-VQE equips
+VQE algorithms with an adaptable, learnable prior,               The VQE algorithm is a hybrid quantum-classical opti-
+which allows for the one-shot generation of effective ini-     mization framework designed to approximate the ground-
+tial solutions and significantly diminishes the need for       state energies of complex quantum systems [6, 9, 49].
+costly iterative optimization from scratch. Flow-VQE           Given a Hamiltonian operator Ĥ defined on an n-qudit
+leverages flow-based generative models [45–48] to ex-                                                           n
+                                                               (D-level quantum system) Hilbert space H ∈ CD ×D ,
+                                                                                                                   n
+
+plicitly model conditional probability distributions over      the VQE seeks to determine its minimal eigenvalue E0 ,
+variational parameters, conditioned on relevant contex-        defined as:
+tual information of quantum systems. We develop a
+preference-based optimization approach for Flow-VQE,                             E0 =     min       ⟨ψ|Ĥ|ψ⟩.             (1)
+enabling efficient training while circumventing quantum                                 ψ∈H,|ψ|=1
+gradient calculations. In doing so, the generative model
+replaces the classical optimizer, turning direct gradient-     Although the VQE can in principle be applied to arbi-
+query interactions into a sampling-based dialogue with         trary multilevel quantum systems, in this work we focus
+the quantum circuit. Additionally, training the model          on the case D = 2, i.e., standard qubit circuits. To do so,
+on a suite of multi-objective tasks enables it to acquire      the VQE involves preparing a trial quantum state using
+meta-initialized heuristics for new systems.                   a variational ansatz U (θ):
+   We empirically validate Flow-VQE through state-                                                    ⊗n
+vector simulation experiments on various quantum chem-                             ψ(θ) = U (θ) |0⟩        ,              (2)
+ical systems. In single-molecule tasks, Flow-VQE reaches
+                                                               where θ = (θ1 , θ2 , . . . , θd ) ∈ Rd is a vector of trainable
+computational accuracy with up to two orders of magni-
+                                                               parameters, and U (θ) : Rd → U(2n ) is a smooth mapping
+tude fewer circuit evaluations than gradient-descent al-
+                                                               from the parameter space to the unitary group acting on
+gorithms. When used as a warm start for subsequent
+                                                               H. This formulation rephrases the eigenvalue problem as
+fine-tuning, it delivers as much as 50-fold acceleration,
+                                                               a variational optimization problem in θ:
+while the total training overhead remains no greater than
+that required to optimize five molecules by conventional                           θ ∗ = arg min L(θ),                    (3)
+methods. Our results comprehensively demonstrate that                                      θ∈Rd
+Flow-VQE significantly reduces quantum circuit evalua-
+tions and reliably generates high-quality variational pa-      where L(θ) := ⟨ψ(θ)|Ĥ|ψ(θ)⟩ is the variational energy
+rameters for initialization, paving the way for its estab-     functional (expected energy of the trial state).
+lishment as a foundational technique for future warm-            The optimization proceeds as a quantum-classical loop:
+starts in variational quantum algorithms.                      a classical optimizer suggests parameter updates, the
+   The remainder of this article is organized as follows, to   quantum device evaluates the objective function L(θ)
+provide the conceptual and empirical ground for Flow-          and its gradients with respect to these parameters, and
+VQE. In Sec. II, we review the essential ingredients of        then the results are iteratively fed back until conver-
+the VQE and flow-based generative models. In Sec. III,         gence. Among various optimization strategies, gradient-
+we detail the Flow-VQE motivation, workflow, and op-           based methods such as gradient descent are commonly
+timization methods that enable training without quan-          employed. These methods require quantum gradient in-
+tum gradients. In Sec. IV, we describe simulation ex-          formation, e.g., using the parameter-shift rule [50]. This
+periments and molecular benchmarks used to quantify            gradient estimation has a computational complexity of
+performance. In Sec. V, we analyze the resulting cost          O(d) per iteration, where d is the number of parame-
+savings in both single-task optimization and generative        ters in the ansatz, making it substantially more expensive
+                                                                                                                                3
+
+than classical backpropagation, which, in contrast, com-         data set D = {xi ∈ Rd }N i=1 into the latent space via
+putes all parameter derivatives simultaneously in a single       z = fτ−1 (x). The corresponding log-likelihood can be
+pass. Alternatively, gradient-free methods can be devel-         evaluated by
+oped under different design principles and have received                                          K
+significant attention [18, 19, 51–53]. These approaches                                           X                       
+                                                                  log pX (x; τ ) = log pZ (z) +         log det J fτ−1 [x]   . (5)
+avoid explicit gradient computation and can potentially                                                              j
+                                                                                                  j=1
+be more practical in scenarios where evaluating quantum
+gradients is costly or infeasible, such as under hardware        The model parameters τ are trained via maximum like-
+noise or in the presence of non-differentiable objectives.       lihood estimation (MLE) over the target data:
+                                                                             L(τ ; D) = −Ex∼D [log pX (x; τ )].               (6)
+                 B.     Normalizing flows
+                                                                              2.     Backward generation process
+   Normalizing flows (NFs) [45, 46, 48] are a class of gen-
+erative models predicated on the principle of invertible            At inference time, we sample z ∼ pZ (z) from the base
+maps between probability densities. To see how NFs               distribution and execute the forward transformation x =
+work, consider a latent vector z ∈ Rd with an associated         fτ (z). For compositional flows, this entails a sequential
+simple base distribution pZ (z), typically a multivariate        application of transformations:
+Gaussian distribution N (µ, Σ). The fundamental objec-
+tive is to construct a bijective and differentiable (diffeo-                          fτ        fτ            ...   fτ
+                                                                                     1
+                                                                        z ∼ pZ (z) −−→ h(1) −−→
+                                                                                              2
+                                                                                                h(2) −−→−−K→ x,               (7)
+morphic) map fτ : Rd → Rd with model parameters
+τ ∈ Rp , which transforms pZ (z) into a modeling dis-            where h(j) denotes the intermediate output after the j-th
+tribution pX (x) that approximates a complex, unknown            transformation.
+data distribution.
+   The transformation is governed by the change-of-
+variables formula:                                               C.   Parameter transfer in the variational quantum
+                                                                                    eigensolver
+                       ∂z
+                            = pZ fτ−1 [x] det J fτ−1 [x] ,
+                                                        
+ pX (x) = pZ (z) det
+                       ∂x                                           Traditional parameter transfer (PT) accelerates the
+                                                           (4)   VQE algorithm by reusing optimized parameters from
+where J fτ−1 [x] denotes the Jacobian matrix of the in-
+                 
+                                                                 structurally adjacent problem instances [26, 29]. Let θk∗
+verse mapping fτ−1 evaluated at point x. To model com-           denote the optimized variational parameters for a VQE
+plex distributions tractably, NFs employ compositional           task Tk . The PT strategy initializes the subsequent task
+transformations: fτ = fτK ◦ fτK−1 ◦ · · · ◦ fτ1 , where K is                                         (0)
+                                                                 Tk+1 using θk∗ as a warm start: θk+1 := θk∗ . The selec-
+the number of transformations.                                   tion of transferable task pairs typically relies on certain
+   This compositional design allows the overall model to         heuristics that aim to preserve underlying similarity be-
+be highly expressive, while keeping each individual Ja-          tween instances. One example is using small geometric
+cobian manageable for likelihood evaluation. However,            perturbations [26], such as those along a potential energy
+computing the log-likelihood remains computationally             surface (PES), where configurations differ by a small Eu-
+intensive due to the need to evaluate Jacobian deter-            clidean distance, e.g., ∥Rk+1 − Rk ∥ ∼ 0.1 Å. In the
+minants at each layer, resulting in a time complexity            absence of further task-specific guidance, such pertur-
+of O(Kd3 ) for general diffeomorphic maps. To allevi-            bations are commonly assumed — with high empirical
+ate this cost, modern flow architectures are often con-          confidence — to keep θk∗ within the attraction basin of
+structed to have sparse Jacobians, where algorithms with         Tk+1 , thereby enabling efficient parameter reuse.
+more favorable time complexity for computing the Jaco-
+bian determinant are possible. Some examples include
+affine coupling flows [54, 55], autoregressive flows [56, 57],                     III.    METHODOLOGY
+and spline-based flows [58, 59]. In contrast, the genera-
+tion process exhibits remarkable efficiency, requiring only        We now introduce the Flow-VQE framework as a sur-
+O(Kd) computational complexity, as it involves mere              rogate model for VQE training, in which conditional nor-
+function evaluations without determinant calculations,           malizing flows can perform one-shot generation of candi-
+enabling rapid sample synthesis.                                 date circuit parameters. We then discuss the standard
+                                                                 policy-gradient method as a general training paradigm,
+                                                                 highlighting their limitations in low-signal, resource-
+                1.    Forward training process                   constrained quantum computing application. To over-
+                                                                 come these challenges, we introduce a preference-based
+  In the training phase, NFs apply the inverse trans-            optimization scheme that enables efficient training of
+formation to map each data point from the empirical              Flow-VQE with few sampling overhead.
+                                                                                                                           4
+
+              A.   Overview of Flow-VQE                        strategies that transform gradient-free energy feedback
+                                                               into a trainable surrogate objective for model optimiza-
+   Generative modeling aims to maximize the likelihood         tion.
+of target data, a goal seemingly ill-suited to VQE opti-
+mization, since it presupposes access to optimal param-
+eter samples — resources generally unavailable in this                         B.   Policy-gradient optimization
+context. Nonetheless, as we will show, this challenge can
+be overcome by leveraging the flexibility of NFs: they can       One solution is to optimize the flow model using an
+be trained based on self-sampled data, with the training       unbiased Monte Carlo estimator [62], also known as the
+process guided by external quality evaluations. A com-         REINFORCE algorithm [63]:
+pelling precedent for this paradigm is Boltzmann genera-
+tors [60], which utilize NFs to learn complex equilibrium        ∇τ Eθ∼pτ (θ|γ) ⟨ψ(θ)|Ĥ(γ)|ψ(θ)⟩
+distributions by using a physical energy function to guide                      N
+                                                                          1 X                                             (9)
+training in the absence of explicit training data. Inspired           ≈         ⟨ψ(θi )|Ĥ(γ)|ψ(θi )⟩∇τ log pτ (θi |γ).
+by this approach, we treat the VQE energy expectation                     N i=1
+as an implicit surrogate for distributional fitness, thereby
+guiding the flow model to concentrate probability density      From a policy-learning perspective, pτ (θ|γ) acts as a
+in low-energy regions of parameter space. Here, the term       conditional policy for generating variational parameters,
+“implicit” indicates that the model is trained not through     with the energy measurement serving as a negative re-
+labels or target parameters, but rather through indirect       ward signal. When weighted by the (negative) energy,
+feedback provided by measured energy expectations. The         the gradient term ∇τ log pτ (θi |γ) ensures that param-
+main idea of Flow-VQE is as follows (see Fig. 1):              eter vectors yielding lower energies exert a greater in-
+                                                               fluence on the model update, thereby biasing the pol-
+      Latent sampling: Draw samples z ∼ p(z) from a            icy toward favorable regions of the variational parameter
+      simple, analytically tractable prior p(z).               space. Importantly, the gradient is taken with respect
+      Conditional transformation: Use an invertible            to the log-likelihood of the sampled parameters, rather
+      neural network fτ to map z into variational pa-          than directly on the energy itself, enabling principled
+      rameters θ = fτ (z; γ), conditioned on the problem-      optimization of generative models in non-differentiable
+      specific context γ, yielding samples θ ∼ pτ (θ|γ).       quantum settings.
+
+      Likelihood evaluation: Explicitly determine the
+      conditional likelihood pτ (θ|γ) according to Eq. (5).               1.    Limitations of (online) policy gradient
+
+      Energy measurement:             Run parameterized
+                                                                  Despite the theoretical validity of policy-gradient
+      quantum circuits with θ to measure the energy
+                                                               methods, their application in Flow-VQE faces two prac-
+      expectation value ⟨ψ(θ)|Ĥ(γ)|ψ(θ)⟩, providing the
+                                                               tical obstacles specific to quantum chemistry: (i) weak
+      implicit training signal for the generative model.
+                                                               optimization signals, and (ii) high variance in gradient
+  The general objective for Flow-VQE is to minimize the        estimates. Quantum chemistry tasks typically require ex-
+expected energy across problem instances:                      ceptionally high energy precision to make meaningful pre-
+                                                               dictions [64, 65]. For instance, a mean-field Hartree–Fock
+  τ ∗ = arg min L(τ )                                          (HF) solution typically recovers more than99.5 % of the
+             τ
+                  h           h                 ii (8)         total electronic energy for small closed-shell molecules,
+      = arg min Eγ Eθ∼pτ (θ|γ) ⟨ψ(θ)|Ĥ(γ)|ψ(θ)⟩ .             while the remaining correlation energy is critical for accu-
+             τ
+                                                               rate property predictions [65, 66]. However, such subtle
+This objective defines a generic paradigm for generative       energy differences translate to extremely weak learning
+initialization in VQE, guiding the model to prioritize pa-     signals in the high-dimensional parameter landscape, re-
+rameter regions that yield low energy across diverse prob-     sulting in nearly flat reward landscapes around optimal
+lem instances. However, optimizing this objective is non-      parameter regions. Although variance-reduction tech-
+trivial in practice. On real quantum hardware or in black-     niques such as baseline subtraction are common in re-
+box evaluation scenarios, we can only observe the scalar       inforcement learning [67], the effectiveness of these base-
+measurement statistics: even though the gate sequence          lines relies on stable empirical estimates, which become
+we submit is known, the intermediate quantum states —          statistically unreliable under the small batch sizes im-
+and thus their derivatives required by automatic differ-       posed by quantum resource limitations.
+entiation [61] — remain inaccessible. Although quantum            In addition, the Monte Carlo estimator in Eq. (9) re-
+gradients with respect to the variational parameters can       quires extensive samples to achieve acceptable variance
+be estimated using the parameter-shift rule, as previously     bounds. The online nature of the estimator — where up-
+discussed, this incurs significantly higher computational      dates are based solely on samples drawn in the current
+cost. To address these problems, Flow-VQE uses implicit        iteration — amplifies sampling inefficiency during early
+                                                                                                                           5
+
+
+
+
+                                                                                  pτ(θ | γ)
+                  z
+
+                      Embedding
+                                  z′            Flows fτ         θ      ∼                                    U(θ)
+
+
+                                                                                 E
+                  γ                                                            θw ≻ θl
+                                                        Maximum                                   Energy
+                                                        likelihood                              preference
+￼
+
+
+
+
+FIG. 1. Schematic overview of the Flow-VQE framework. Latent samples z conditioned on the molecular context γ are
+transformed into variational parameters θ via normalizing flows and evaluated by quantum circuits. Preference comparisons
+identify low-energy winners, which are retained in a buffer and used to update the model through maximum likelihood training.
+
+
+training, when most samples lie far from the optimum.           as each encourages the model to generate higher-quality
+Taken together, these factors result in a vanishing signal-     samples, albeit through distinct supervision mechanisms.
+to-noise ratio in gradient estimation, severely impeding           Preference optimization decouples model updates from
+learning dynamics and rendering online policy-gradient          immediate online sampling, reducing distributional drift
+methods inefficient in low-signal, resource-constrained         and gradient variance by focusing exclusively on high-
+quantum environments.                                           quality samples. This avoids the instability often ob-
+                                                                served in online policy methods, when low-quality sam-
+                                                                ples dominate under limited sampling budgets. Further-
+          C.   Preference-based optimization                    more, by replacing noisy scalar rewards with binary com-
+                                                                parisons; the preference-based objective amplifies learn-
+   Drawing inspiration from recent advances in preference       ing signals even in low-energy-differential regimes. As
+fine-tuning for large language models [68, 69], we propose      a result, the model can improve reliably with small ex-
+a preference-based optimization approach for Flow-VQE           ploratory batches, substantially enhancing sample effi-
+to mitigate the limitations of the policy-gradient method.      ciency in quantum-constrained settings.
+Rather than relying on high-variance energy-weight sig-            The pseudocode for Flow-VQE training via preference
+nals, our approach leverages direct performance prefer-         optimization is presented in Algorithm 1. We note that,
+ences among sampled parameters to construct a more              compared to conventional VQE training, Flow-VQE in-
+informative supervision signal.                                 troduces some additional hyperparameters, such as buffer
+   Specifically, we define a preference relation: θi ≻ θj       size, batch size, and architectural parameters of the flow
+if E(θi ) < E(θj ), where E(θ) is the energy expecta-           model. In practice, this increases implementation com-
+tion value measured for a given sample θ. We main-              plexity and may require more empirical tuning across
+tain and dynamically update an ‘elite memory buffer’            different systems. On the other hand, it opens up op-
+B = {(θkw , γk )}M
+                 w=1 , which stores the top M samples un-       portunities for further improvements through automated
+der the energy-based preference ordering for each molec-        hyperparameter tuning [70] and model-architecture re-
+ular structure k. To optimize the Flow-VQE distribution         finement.
+pτ (θ|γ), we perform MLE over the samples from buffer
+B:
+                                                                         IV.    NUMERICAL SIMULATIONS
+          L(τ ) = −E(θkw ,γk )∼B [log pτ (θkw |γk )],   (10)
+where the log-likelihood is explicitly calculated by               In this section, we investigate the performance of Flow-
+Eq. (5).                                                        VQE in a dual role: as a standalone optimizer for di-
+   We clarify that the distinction between standard MLE         rect energy minimization, and as a warm-start param-
+[Eq. (6)] and our approach lies in the source of train-         eter generator providing high-quality initializations for
+ing data: while standard generative modeling focuses on         conventional VQE routines. Our simulations span mul-
+samples from a fixed target data set, our method per-           tiple molecular systems with varying geometric config-
+forms MLE on a self-sampled data set whose quality is           urations: a linear hydrogen chain (H4 ), water (H2 O),
+progressively enhanced through dynamic selection based          ammonia (NH3 ) and benzene (C6 H6 ). For each system,
+on the preference criterion. Notably, both the objec-           we explore distinct conformational changes: simultane-
+tives in Eq. (9) and Eq. (10) are consistent with Eq. (8),      ous stretching of neighboring H–H distances in H4 ; sym-
+                                                                                                                               6
+
+Algorithm 1. Training Flow-VQE based on preference opti-              for H2 O, and 12 qubits for both NH3 and C6 H6 . For
+mization.                                                             the PQC architectures, we employ a 10-layer hardware-
+Require: Molecular conditions {γk }K            k=1 ,  Hamiltonians   efficient RY -linear ansatz [74] for H4 and a Givens-based
+    {Ĥ(γk )}Kk=1 , flow model pτ (θ|γ), training epochs T ,          singles and doubles (GSD) ansatz [75, 76] for H2 O, NH3 ,
+    batch size B, buffer size M                                       and C6 H6 . Corresponding to these ansätze, the number
+ 1: Initialize flow parameters τ , memory buffers B = {Dk =           of optimizable variational parameters is 55 for H4 , 54 for
+    ∅}K
+      k=1                                                             H2 O, and 117 for both NH3 and C6 H6 . Further details
+ 2: for epoch = 1 to T do                                             of the ansatz structures are provided in Appendix B.
+ 3:    for each γk in {γk }K    k=1 do
+ 4:       Sample parameters from the flow model:
+          {(θinew , log pτ (θinew |γk ))}B
+                                         i=1 ∼ pτ (θ|γk )
+ 5:       for i = 1 to B do                                                         3.    Flow-model implementation
+ 6:          Evaluate energy: Einew ← ⟨ψ(θinew )|Ĥ(γk )|ψ(θinew )⟩
+ 7:          Add to memory buffer: Dk ← Dk ∪{(θinew , Einew )}           In our implementation of Flow-VQE, we employ Gaus-
+ 8:       end for                                                     sianization flows [77] as the backbone NF architecture.
+ 9:       Sort Dk by ascending energy                                 Gaussianization flows support efficient likelihood eval-
+10:       if |Dk | > M then                                           uation for fast training, enable rapid sampling, exhibit
+11:          Dk ← {(θkw , Ekw ) ∈ Dk | w ∈ {1, . . . , M }} {Keep
+                                                                      greater robustness to data transformations, and general-
+             top M }
+12:       end if                                                      ize more effectively on small datasets than other main-
+13:    end for                                                        stream flow models [77]. Each element-wise transforma-
+14:    Preference optimization:                                       tion in the flow is parameterized by a multi-layer per-
+15:    θW ← ∅                                                         ceptron comprising three hidden layers with 256 units
+16:    for each Dk , corresponding to γk do                           each and exponential linear unit (ELU) activation func-
+17:       θ W ← θ W ∪ {(θkw , γk ) | (θkw , Ekw ) ∈ Dk }              tions [78]. Each flow layer employs a mixture of logistic
+18:    end for                                                        distributions with 32 components. A detailed description
+19:    Compute loss: L ← −E(θw ,γk )∈θW [log pτ (θkw |γk )]           of Gaussianization flows is provided in Appendix C. In
+                                       k
+20:    Update: τ ← τ − η∇τ L                                          addition, the base distribution uses a multivariate nor-
+21: end for                                                           mal N (µ = 0, Σ = 0.01 · I), ensuring that initial samples
+22: return pτ (θ|γ)
+                                                                      remain close to the HF reference point, since the zero
+                                                                      vector corresponds exactly to HF initialization under our
+                                                                      ansätze.
+metric stretching of both O–H bonds in H2 O; nitrogen                    To guide conditional generation, we construct the con-
+pyramidal inversion in NH3 while maintaining the three                text vector γ for each molecular geometry by passing its
+hydrogen atoms fixed in a plane; and stretching of a single           Hamiltonian coefficients — represented in a fixed-order
+C–H bond in C6 H6 . The corresponding atomic coordi-                  Pauli string basis — through a simple linear embedding
+nates for all molecules are provided in Appendix A.                   layer. This design ensures a consistent context order-
+                                                                      ing across different configurations of the same molecule,
+                                                                      facilitating generalization across geometric variations.
+                   A.   Simulation setup                                 We train the flow model using the Adam optimizer [79],
+                                                                      with both the learning rate η and weight decay set to
+              1.   Electronic structure modeling                      0.0001; these values are empirically chosen from small-
+                                                                      scale simulations. To enhance exploration and reduce
+  We implement all computational procedures using                     overfitting under limited sample regimes, Gaussian noise
+PennyLane [71] with OpenFermion plugins [72]. We em-                  with zero mean and a variance of 0.001 is added to the
+ploy the minimal STO-3G basis set for H2 O, NH3 , and                 winning parameters before evaluating the sample likeli-
+C6 H6 , and the cc-pVDZ basis set for H4 to construct                 hood during Flow-VQE training. In the preference-based
+the restricted HF orbitals. For active-space selections,              optimization setting, all experiments use a batch size of
+we perform them to manage computational complexity                    B = 2 per sampling and maintain a buffer size of M = 2
+while preserving essential electronic structure features:             to retain at most two winning samples per molecular
+(4e, 4o) for H4 , (6e, 5o) for H2 O, (6e, 6o) for NH3 , and           configuration. We deliberately adopt such a small-scale
+(6e, 6o) for C6 H6 .                                                  setup to demonstrate the sample efficiency of our method
+                                                                      in low-budget scenarios.
+
+              2.   Quantum computation aspect
+                                                                                     B.     Experimental design
+  The fermionic Hamiltonians are mapped to qubit
+Hamiltonians using the Jordan–Wigner transformation,                     We evaluate the Flow-VQE framework under two
+resulting in the following qubit requirements: 5 qubits for           training regimes tailored to different experimental objec-
+H4 (after applying Z2 symmetry tapering [73]), 10 qubits              tives: Flow-VQE-S, which is trained on a single molecular
+                                                                                                                       7
+
+configuration for direct optimization, and Flow-VQE-M,        domain. For each structure, we sample 16 parameter
+which is trained on multiple configurations for genera-       vectors from the flow model and assess both the min-
+tive warm starts. We use seven flow layers for H4 and         imum and mean energies as primary metrics. We fur-
+ten layers for H2 O, NH3 , and C6 H6 in Flow-VQE-S. For       ther select high-error samples from H2 O and H4 for post-
+Flow-VQE-M, we employ 20 flow layers for each molecule.       training, aiming to explore the potential to rapidly drive
+                                                              the ansätze toward their expressivity limits under differ-
+                                                              ent optimizer settings.
+                   1.    Performance metric
+
+   We adopt the number of quantum circuit evaluations,                       4.   Estimating cost advantage
+independent of measurement shot counts, as the pri-
+mary performance metric for comparing optimization al-           Given the probabilistic nature of Flow-VQE’s inference
+gorithms. This choice is justified by the observation         mechanism, deriving a general analytical expression for
+that changes in molecular geometry typically only mod-        cost evaluation is infeasible and inherently dependent on
+ify the coefficients in the Hamiltonian, while the operator   implementation details. To provide a representative es-
+terms remain unchanged [80] — assuming that the self-         timate, we conduct empirical case studies on the NH3
+consistent field procedure converges without numerical        and C6 H6 molecules under lightweight training, where
+artifacts. Therefore, the statistical requirements for ob-    both the number of iterations and training configura-
+servable measurements remain comparable across differ-        tions are deliberately limited to avoid generating overly
+ent molecular configurations, enabling a consistent eval-     high-quality parameters too early and to retain room for
+uation protocol. In contrast, reporting only the number       warm-started optimization.
+of optimization iterations can be misleading, as different       Specifically, we train Flow-VQE-M on four con-
+algorithms require varying numbers of quantum circuit         figurations for each molecule.            For NH3 , the
+executions per iteration to determine parameter updates.      training points correspond to nitrogen displacements
+                                                              {−0.5, −0.17, 0.17, 0.5} Å along the inversion path, where
+                                                              0 Å denotes the geometric center of the hydrogen plane;
+             2.    Single molecule optimization               each point involves 3,000 circuit evaluations (12,000 in
+                                                              total). For C6 H6 , the configurations involve stretch-
+   We evaluate five optimization algorithms on H2 O and       ing a single C–H bond relative to its equilibrium length
+H2 molecular systems: gradient descent (GD), quan-            (1.084 Å) by {−0.3, 0.0, 0.3, 0.6} Å, with 6,000 evalua-
+tum natural-gradient simultaneous perturbation stochas-       tions per point (24,000 in total). Provided that the cu-
+tic approximation (QNSPSA) [18], Adam, and the two            mulative cost savings enabled by generative warm starts
+variants of our Flow-VQE method (Flow-VQE-S and               across downstream tasks outweigh the initial training
+Flow-VQE-M). While Flow-VQE-M is primarily designed           overhead, the Flow-VQE-M approach yields a net ad-
+as a parameter generator for warm-starting downstream         vantage in quantum resource utilization.
+tasks, it inherently performs multi-objective joint opti-        Additionally, we benchmark Flow-VQE-M against the
+mization. Accordingly, we include its convergence be-         conventional PT method. In our PT protocol, we choose
+havior in our comparative assessment.                         the 0 Å configuration as the reuse point for each molecule
+   The total number of circuit evaluations required by        and optimize it via Flow-VQE-S, using 2,000 circuit eval-
+each method is computed as follows: 2dNepoch for GD           uations for NH3 and 6,000 for C6 H6 (sufficient to reach
+and Adam, where d is the variational parameter dimen-         computational accuracy), thus defining the pre-training
+sion and Nepoch is the total number of optimization itera-    cost for each system.
+tions; 6Nepoch for QNSPSA, which is a gradient-free algo-
+rithm with constant complexity; and BNepoch for Flow-
+VQE-S and Flow-VQE-M, with a batch size of B = 2.                      V.    RESULTS AND DISCUSSION
+
+                                                                        A.    Single-molecule optimization
+                  3.    Generative warm start
+                                                                 Figure 2 illustrates the number of circuit evaluations
+   We evaluate the generative capability of Flow-VQE-M        required by each algorithm to achieve convergence within
+by analyzing its performance in producing approximate         computational accuracy, defined as an error not exceed-
+variational parameters for the ansätze along the PESs of     ing 1.6×10−3 Hartree relative to exact diagonalization at
+H2 O and H4 molecular systems. For experimental eval-         the same level of theory [81]. Here, the exact diagonaliza-
+uation, we train Flow-VQE-M on six molecular geome-           tion results are assumed to be known for a benchmarking
+tries of H2 O and eight of H4 , respectively. After 5,000     purpose.
+training epochs (equivalent to 10,000 circuit evaluations        For the H2 O molecule [Fig. 2(a)], Flow-VQE-S con-
+per molecule), we evaluate performance by uniformly se-       sistently outperforms all baseline optimizers across the
+lecting 50 molecular structures across the bond-length        test structures, e.g., achieving improvements of one to
+                                                                                                                                8
+
+(a)                                                                                     Nc.a.              ∆Emin
+                  O                                                 Molecule      η
+                                                                                     FVM HF          FVM           HF
+             H          H                                                       0.02 324 8748 5.932 × 10−4 5.932 × 10−4
+                                                                      H2 O     0.005 432 30672 5.935 × 10−4 6.000 × 10−4
+                                                                               0.001 1944 102276 5.941 × 10−4 1.033 × 10−3
+                                                                                0.02 770 8910 5.205 × 10−8 2.489 × 10−7
+                                                                       H4      0.005 440 16720 1.319 × 10−9 3.202 × 10−9
+                                                                               0.001 1980 72270 1.053 × 10−10 2.579 × 10−4
+
+                                                                   TABLE I. Post-training comparison of Flow-VQE-M (FVM)
+                                                                   and HF initializations for H2 O at a bond length of 1.90 Å and
+                                                                   H4 at 2.58 Å using different learning rates (η). After obtain-
+                                                                   ing initial parameter sets from either FVM or HF, we perform
+                                                                   standard VQE by running 1000 iterations of the Adam opti-
+                                                                   mizer. The performance metrics reported are the number of
+                                                                   circuit evaluations required to reach computational accuracy
+(b)                                                                (Nc.a. ) and the minimum energy error achieved over iterations
+                                                                   (∆Emin ).
+
+
+                                                                   the optimization target is close to the initial state, allow-
+                                                                   ing Adam to converge quickly. While Flow-VQE-S still
+                                                                   retains an overall advantage, its margin over Adam is re-
+                                                                   duced — an effect that may be attributed to the more
+                                                                   rugged energy landscapes introduced by the hardware-
+                                                                   efficient ansatz, whose trainability remains a significant
+                                                                   challenge. Furthermore, the performance gap between
+                                     H     H     H     H           Flow-VQE-M and Flow-VQE-S narrows in this setting,
+                                                                   implying that broader distributional exploration may
+                                                                   contribute to avoiding certain optimization traps.
+
+
+                                                                                      B.   Generative warm start
+FIG. 2. Number of quantum circuit evaluations required to
+achieve computational accuracy for optimizing (a) H2 O and
+(b) H4 using different optimizers. Optimization is performed                 1.   Generating potential-energy surfaces
+over six uniformly spaced bond lengths in [0.8, 1.8] Å for H2 O
+and eight lengths in [0.6, 2.6] Å for H4 . The arrows in each       The results presented in Fig. 3, which include the PESs
+molecular diagram represent changing bond lengths. All base-       of the representative systems H2 O and H4 , substanti-
+line optimizers use a learning rate of η = 0.02.
+                                                                   ate the high quality of parameters generated by Flow-
+                                                                   VQE-M. When evaluated in the corresponding ansätze,
+                                                                   these generated parameters yield energy expectation val-
+two orders of magnitude over traditional GD. Compared              ues closely align with the exact solutions, significantly
+to the competitive Adam baseline, Flow-VQE-S achieves              outperforming HF baselines. Overall, energy errors in-
+approximately a two- to five-fold reduction in the number          crease in stretched bond-length regions due to strong
+of circuit evaluations.                                            correlation effects [82] and the limited expressivity of
+   Flow-VQE-M also performs comparably to Adam, de-                the employed ansätze. Nevertheless, Flow-VQE-M main-
+spite being trained in a more challenging multi-objective          tains high-quality results, demonstrating robust perfor-
+setting. While Flow-VQE-M does not match the conver-               mance even under these challenging conditions. Notably,
+gence efficiency of Flow-VQE-S, this is expected: Flow-            most generated points already achieve computational ac-
+VQE-M is designed to generalize across multiple struc-             curacy, leading to high quality PESs. These points can
+tures, rather than optimize a single fixed instance. Thus,         therefore serve as strong initializations for VQE, facili-
+it trades off some task-specific performance in favor of           tating rapid convergence to the desired precision.
+broader applicability and transferable warm-start capa-
+bility.
+   For the H4 system [Fig. 2(b)], which spans a broader                               2.   Warm-start post-training
+range of bond lengths (0.6 Å to 2.8 Å), Flow-VQE-S gen-
+erally outperforms the baseline optimizers across most               Table I presents a comparison of post-training per-
+bond lengths. The only exception arises at 0.6 Å, where           formance between Flow-VQE-M and HF initialization
+                                                                                                                                   9
+
+(a)
+                        )
+
+                                                                                           (             (
+
+
+
+
+                                                        O
+                                                   H         H
+
+
+
+
+(b)
+                    (                                                                                        )
+                                                                                                         )
+                                                                                                                       )
+ )
+
+
+
+
+                                            H     H     H     H
+
+
+
+
+FIG. 3. Potential-energy surfaces (left) and corresponding errors (right) for (a) H2 O and (b) H4 evaluated using parameters
+generated by Flow-VQE-M. Training points are consistent with those used in Fig. 2. Generation is performed on 50 uniformly
+spaced test points in the range [0.75, 1.9] Å for H2 O and [0.6, 2.8] Å for H4 . In the left panels, the generated points (markers)
+coincide so closely with the exact curve (blue) that they mostly obscure the latter.
+
+
+at different learning rates on H2 O and H4 . Across all                          C.    Estimate of cost advantage
+settings, Flow-VQE-M consistently demonstrates faster
+convergence and lower energy errors compared to HF                     To provide a rough quantitative assessment, we use
+initialization. In practice, learning rates η are typically         the number of circuit evaluations required to reach a
+chosen between 0.01 and 0.1; for our benchmarks we set              target computational accuracy as the cost metric. As
+η = 0.02. At this rate, Flow-VQE-M reduces the num-                 shown earlier in Fig. 2, Flow-VQE-M incurs a number of
+ber of circuit evaluations required to reach computational          evaluations during training comparable to that of stan-
+accuracy by over 27-fold for H2 O and more than 11-fold             dard VQE with Adam. This suggests that, when training
+for H4 . Moreover, this advantage grows even more pro-              points are also required for a task, Flow-VQE-M offers a
+nounced at smaller η. For instance, at η = 0.001, Flow-             clear quantum resource advantage due to its additional
+VQE-M cuts the required evaluations by more than 50-                generative capability. In what follows, we focus exclu-
+fold for H2 O and over 36-fold for H4 , while achieving             sively on the cost evaluation for unseen test configura-
+significantly lower minimum energy errors. Complete op-             tions.
+timization trajectories corresponding to the results in Ta-
+                                                                       Let Cpre denote the total pre-training cost, and C̄post
+ble I are further provided in Appendix D 2. These results
+                                                                    the average post-training cost, per test point. Although
+underscore the effectiveness of Flow-VQE-M as a robust
+                                                                    individual VQE procedures require significantly different
+warm-start strategy that substantially enhances sample
+                                                                    optimization efforts, we approximate the cost growth us-
+efficiency and convergence precision in the post-training
+                                                                    ing average values for simplicity. Accordingly, the to-
+stage, even under conservative optimization settings.
+                                                                    tal cost of using a typical warm-start method (such as
+                                                                    Flow-VQE or PT) for ntest test points is Ctotal = Cpre +
+                                                                                                                                10
+
+(a)                                                               (b)                                                              
+
+
+
+
+                                                                               
+                                                                                             -
+                                                                          
+                                                                                     H           H
+                                                                                         C       C
+                    N
+                                                                                 H C                 C H
+                H   H    H                                                               C       C
+                                                                                     H           H
+
+
+
+
+                     -
+                         -
+
+FIG. 4. Circuit evaluation costs for achieving computational accuracy in (a) NH3 and (b) C6 H6 , comparing HF, PT, and
+Flow-VQE-M initializations. The upper panels show circuit evaluation counts across different molecular geometries. The lower
+panels present approximated average scaling trends as the number of test points increases; the intercept indicates the one-time
+pre-training cost for each strategy, and the slope reflects the average post-training cost per additional test point. The arrows
+in each molecular diagram represent modes of atomic displacement. Optimization is performed using the Adam optimizer
+with a learning rate of η = 0.02. Note that evaluation counts are recorded as integer multiples of the number of variational
+parameters; hence, circuit evaluations with similar initialization contributions differ by less than a full iteration, resulting in
+bars of identical height.
+
+
+C̄post · ntest . In contrast, standard VQE incurs a cost of        points, and over PT beyond six points. For C6 H6 , the
+approximately C̄VQE · ntest . Given that C̄post < C̄VQE ,          respective values are C̄VQE = 10, 787, C̄post = 2, 153
+the gentler cost scaling of warm-start methods highlights          (Flow-VQE-M), and C̄post = 5, 873 (PT), with corre-
+their growing advantage as ntest increases.                        sponding pre-training costs of 24, 000 and 6, 000. Here,
+   Figure 4 compares the training costs using standard             Flow-VQE-M outperforms standard VQE after three test
+VQE, PT, and Flow-VQE-M warm-start strategies for                  points and PT after five points. These estimates are
+NH3 and C6 H6 , along with corresponding scaling esti-             instance-dependent and not intended as universal bench-
+mates. For NH3 , standard VQE requires an average of               marks, but they illustrate the practical advantages of
+C̄VQE = 5, 265 circuit evaluations per test point, reduced         Flow-VQE-M in scenarios requiring repeated evaluations
+to C̄post = 2, 527 by Flow-VQE-M and C̄post = 4, 165 by            across chemical space.
+PT. With pre-training costs of Cpre = 12, 000 for Flow-              We attribute these savings to Flow-VQE-M’s ability
+VQE-M and Cpre = 2, 000 for PT, Flow-VQE-M achieves                to embed problems into a latent space where similarity
+a net cost advantage over standard VQE beyond five test            captures the closeness of the optimal variational param-
+                                                                                                                          11
+
+eters, a shift from conventional PT. Unlike PT, which          then raise B once the parameters approach the ground-
+relies on heuristic reuse based on geometrical proximity,      state basin, thereby sharpening energy estimates without
+Flow-VQE-M conditions its parameter distribution on            expending resources on low-overlap regions. Because this
+rich, task-specific embeddings spanning diverse molecular      schedule is independent of the variational dimension d,
+configurations. While these embeddings are not explic-         it bypasses the quartic growth in the qubit counts that
+itly engineered to encode structural or electronic features,   typically characterizes chemically motivated ansätze [89]
+the model benefits from exposure to a broad training dis-      and the even steeper scaling of many hardware-efficient
+tribution, allowing it to capture latent task similarities.    ansätze [90]. On the classical side, the classical overhead
+Notably, advances in molecular descriptors [83, 84] pro-       in modern normalizing-flow architectures scales linearly
+vide a fertile ground for designing more informative em-       in d, keeping training and inference practical even as d
+beddings. Nevertheless, even in its current form, Flow-        reaches the tens of thousands [91].
+VQE-M is capable of generalizing beyond geometric sim-
+ilarity. This is exemplified in the case of C6 H6 , where         In addition, after training on a set of representative
+reused parameters from the 0 Å configuration yields un-       systems, Flow-VQE can warm start to unseen members
+expectedly fast convergence for distant configurations,        of the same chemical family; in principle, this capability
+suggesting the presence of deeper task correlations not        persists across system sizes, although retaining predictive
+captured by geometry alone. In contrast to the man-            power requires explicit molecular representation learning
+ual identification of transferable patterns required by PT,    [83, 84] to distill the most relevant features. In particular,
+Flow-VQE-M learns how contextual embeddings modu-              when approximate reference data are available — such as
+late the parameter distribution, enabling more consistent      historically calculated inaccurate data — the flow model
+and scalable transfer across chemically diverse settings.      can be pre-trained entirely with classical computation on
+                                                               this corpus, and then fine-tuned through its standard in-
+                                                               teraction with the quantum device. This two-stage reg-
+    VI.   LIMITATIONS AND FUTURE WORK                          imen shifts the bulk of optimization off-hardware and
+                                                               making larger systems economically accessible. Capital-
+   Flow-VQE, as a black-box optimizer for VQE, may             izing on these gains, our immediate priority is to scale
+be less precise than gradient-based methods in smooth,         Flow-VQE to systems exceeding 20 qubits, thereby fur-
+differentiable energy landscapes, where exact gradients        nishing a decisive, empirical assessment of its ability to
+enable fine exploitation of local curvature. However, its      treat larger, more chemically realistic molecules.
+gradient-free nature may offer improved robustness for
+noisy VQE — a hypothesis that remains to be systemat-             We want to emphasize that the most stubborn train-
+ically validated.                                              ing obstacles in VQE (barren plateaus in particular) stem
+   In addition, the preference-based optimization in Flow-     largely from the ansatz structure [13, 92]: merely chang-
+VQE tends to concentrate probability density over              ing optimization methods cannot, by itself, restore mean-
+time, which can reduce sample diversity and limit ex-          ingful gradients in an intrinsically flat landscape. Gen-
+ploratory behavior. Mitigating this limitation requires        uine progress therefore requires Flow-VQE and ansatz
+further investigation into entropy-regularized objectives      designs to advance together. Accordingly, a compelling
+or diversity-promoting preference selection strategies [85,    extension of Flow-VQE lies in moving beyond fixed pa-
+86].                                                           rameterized templates to directly generate quantum cir-
+   Once sampling diversity is better preserved, Flow-VQE       cuits as symbolic gate sequences. This unified “operator
+can become a natural front-end to quantum subspace             space” approach treats all allowed gate primitives and
+methods [87, 88]. A trained flow model can generate            ordering choices as part of a single search domain, en-
+many parameter sets in constant time, each yielding a          abling end-to-end optimization of circuit structures. By
+trial state with high ground-state overlap. These non-         conditioning generative flows on Hamiltonian features,
+orthogonal yet independent states can span a compact           the model can learn systematic mappings from problem
+subspace, thereby lowering the effective dimensionality        instances to circuit architectures that respect symmetries
+of the subsequent eigenvalue problem.                          and generalize across different molecules. In this setting,
+   While the numerical experiments reported here extend        Flow-VQE offers a principled foundation for discrete se-
+only to 12-qubit active spaces and 117 variational pa-         quence modeling and quantum architecture search [93],
+rameters, several features of Flow-VQE promise broad           where circuit structures and operator orderings are inher-
+quantum-resource savings, even when scaling to larger          ently non-differentiable and combinatorial. Prior studies
+molecules. First, each optimization epoch engages the          have shown that operator ordering significantly impacts
+quantum processor only B times — each engagement it-           variational expressivity and simulation accuracy [80, 94–
+self comprising the required number of shots for sufficient    96]. Leveraging discrete normalizing flows [97, 98], Flow-
+measurement statistics. Although we use B = 2 through-         VQE can be extended to explore such combinatorial
+out this study, B (and the shot budget) can be dynam-          spaces efficiently, supporting the automated discovery
+ically scheduled. During the exploratory phase one may         of expressive, transferable, and Hamiltonian-aware quan-
+set a small size of B to survey the landscape cheaply, and     tum circuits.
+                                                                                                                   12
+
+                 VII.   CONCLUSION                                    Appendix A: Molecular geometries
+
+
+   We introduce Flow-VQE, which provides a probabilis-           We here summarize the parameterized geometries used
+tic framework for recasting variational quantum opti-         for selected molecular systems in this work. All coor-
+mization as a generative modeling task. By leveraging         dinates are given in Cartesian format (in Å), as func-
+preference-based training, Flow-VQE eliminates the need       tions of a distortion parameter (typically a bond length
+for quantum gradient estimation and progressively re-         or stretching coordinate).
+fines its sampling distribution to generate increasingly
+high-quality variational parameters. Evaluated on rep-
+resentative molecular systems, Flow-VQE enables lower
+quantum resource cost during optimization than stan-                                1.    H2 O (Water)
+dard methods and supports transferable warm starts by
+extracting generalizable features from diverse molecular
+structures. When generating hundreds of variational pa-         The H–O–H bond angle is fixed at θ = 104.5◦ , and
+rameters, the associated classical training remains easily    the O–H bond length is varied symmetrically by a scalar
+tractable with modern machine learning techniques and         distance d. The coordinates are
+does not pose a computational bottleneck. These results
+position Flow-VQE as a practical and resource-efficient                 
+                                                                         O        0       0       0
+                                                                                                         
+approach for near-term variational quantum simulation.                  H d · sin(θ/2) 0 d · cos(θ/2) .
+   Although the present work focuses on VQE, the frame-                   H −d · sin(θ/2) 0 d · cos(θ/2)
+work extends naturally to other variational quantum al-
+gorithms — such as the quantum approximate optimiza-
+tion algorithm [99] — whenever a well-defined loss func-
+tion exists. Extending the flow model from parameter
+space to operator or mixed space further lays a principled               2.   H4 (Linear hydrogen chain)
+foundation for the emerging field of multimodal quantum
+circuit generation [100]. Overall, this work highlights the     The four hydrogen atoms are aligned along the x axis
+promise of integrating generative modeling with quantum       with uniform spacing d. The coordinates are
+optimization to expand the algorithmic design space and
+advance hybrid quantum-classical computing.
+                                                                                          H 0 0 0
+                                                                                                 
+                                                                                         H d 0 0
+                                                                                         H 2d 0 0 .
+                                                                                          H 3d 0 0
+
+               ACKNOWLEDGMENTS
+
+                                                                               3.        NH3 (Ammonia)
+   This work was partially supported by the Wallen-
+berg AI, Autonomous Systems and Software Program
+(WASP) funded by the Knut and Alice Wallenberg Foun-             The nitrogen atom is placed at (0, 0, d) along the z
+dation. The work was further supported by a joint             axis, while the three hydrogen atoms form an equilateral
+project between WASP and the Wallenberg Centre for            triangle in the xy plane. The coordinates are
+Quantum Technology (WACQT), funded by the Knut
+and Alice Wallenberg Foundation. Preliminary results                                          
+                                                                                N 0      0   d
+were enabled by resources provided by the National                             H 1
+Academic Infrastructure for Supercomputing in Sweden                                   √0   0.
+                                                                               H −0.5
+(NAISS) at Alvis (project: NAISS 2025/22-480), par-                                     √3/2 0
+                                                                                               
+tially funded by the Swedish Research Council through                           H −0.5 − 3/2 0
+grant agreement no. 2022-06725. AFK also acknowl-
+edges support from the Swedish Foundation for Strategic
+Research (grant numbers FFL21-0279 and FUS21-0063)
+and the Horizon Europe programme HORIZON-CL4-                                  4.        C6 H6 (Benzene)
+2022-QUANTUM-01-SGA via the project 101113946
+OpenSuperQPlus100. SO thanks Morten Kjaergaard
+(UCPH) for discussions during the early conceptualiza-         The equilibrium geometry is obtained from the
+tion of the presented work.                                   National Institute of Standards and Technology
+                                                                                                                          13
+
+database [101]. The coordinates are                              Double excitations can be implemented using four-qubit
+                                                               gates G(2) (θ), which coherently mix configurations like
+               C1    1.3970        0   0                         |0011⟩ ↔ |1100⟩. A decomposition choice of G(2) (θ) into
+             C2     0.6985     1.2098 0                        elementary quantum gates is shown in Fig. 5.
+             C3 −0.6985        1.2098 0
+                                        
+                                                                    In contrast, the Trotterized UCCSD ansatz requires
+             C4 −1.3970           0   0
+                                        
+                                                                 mapping fermionic excitations to qubits via the Jordan–
+             C5 −0.6985 −1.2098 0
+                                        
+                                                                 Wigner transformation [103, 104], where each term in-
+             C6     0.6985 −1.2098 0
+                                        
+                                                                 troduces long parity strings to preserve anticommuta-
+             H1 2.4810 + d        0   0
+                                        
+             H2                                                 tion relations. In the first-order Trotter decomposition,
+                    1.2405     2.1486 0                       these nonlocal structures lead to a gate complexity up-
+             H3 −1.2405        2.1486 0
+             
+             H4 −2.4810
+                                                                per bounded by O(n5 ) for n spin orbitals [76, 105]. The
+                                  0   0                       Givens-based ansatz achieves a reduced gate complexity
+             H5 −1.2405 −2.1486 0
+                                                                 of O(n4 ) [76], corresponding to the total number of spin-
+               H6    1.2405 −2.1486 0                            adapted single and double excitations. This makes it
+Here, the equilibrium C–H bond length is 1.084 Å. The           a more hardware-efficient choice for near-term quantum
+variable d controls the displacement of H1 along the C1–         devices.
+H1 bond direction, allowing both bond compression (d <
+0) and stretching (d > 0), while all other atoms remain
+fixed.                                                                        2.    Hardware-efficient ansatz
+
+                                                                    A hardware-efficient ansatz (HEA) is an architecture-
+              Appendix B: Ansatz details                         driven variational circuit designed to maximize compat-
+                                                                 ibility with the native gate set and connectivity of near-
+    1.   Givens-based singles and doubles ansatz                 term quantum hardware [74]. It typically consists of al-
+                                                                 ternating layers of parameterized single-qubit rotations
+   The Givens-based singles and doubles (GSD)                    R(θ) and entangling gates Uent arranged in patterns that
+ansatz [75, 76, 102] provides a qubit-native alter-              match the hardware topology. The general form of an
+native to the conventional unitary coupled-cluster               HEA circuit with L layers is
+singles and doubles (UCCSD) ansatz [89]. It constructs                                  L
+                                                                                                       !
+the variational wavefunction by sequentially applying                                  Y           (ℓ)
+                                                                            |ψ(θ)⟩ =      R(θℓ )Uent R(θ0 )|ψ0 ⟩.     (B3)
+particle-conserving exchange gates that encode single
+                                                                                         ℓ=1
+and double excitations directly on qubits:
+                                                               In this work, we adopt Nn a hardware-efficient RY -linear
+                  Y     (1)                                      form, where R(θℓ ) = i=1 RY,i (θℓ,i ) with n qubits, and
+      |ψ(θ)⟩ =        Gij (θij )                                 (ℓ)
+                  (i,j)∈S                                        Uent consists of linear nearest-neighbor CNOT gates.
+                                                        (B1)
+                               (2)
+                      Y
+                             Gklmn (θklmn )|ψ0 ⟩,                                a.   Trainability challenges
+                (k,l,m,n)∈D
+
+where S and D denote the sets of spin-adapted single                While HEAs can become increasingly expressive with
+and double excitations, respectively. Each gate acts lo-         depth, it has been shown that sufficiently deep, ran-
+cally and preserves particle number, enabling efficient,         domly parameterized circuits can approximate unitary
+constant-depth implementation on quantum hardware.               2-designs [106] — ensembles of unitaries that reproduce
+The two-qubit gate G(1) (θ) for single excitations mixes         the second-order statistical moments of the Haar distri-
+|01⟩ and |10⟩ and can be implemented by                          bution [92]. This level of expressivity induces a concen-
+                                                                 tration of measure in the cost landscape, causing bar-
+             1     0          0      0
+                                      
+                                                                 ren plateaus [12, 13] — gradients vanish exponentially
+            0 cos(θ/2) − sin(θ/2) 0                            with system size. This renders variational training dif-
+ G(1) (θ) = 
+             0 sin(θ/2) cos(θ/2) 0                              ficult or even infeasible for large circuits. To mitigate
+             0     0          0      1                           this issue, practical implementations often constrain cir-
+                                 RY (θ/2)                        cuit depth, incorporate symmetry-preserving structures,
+                                                                 or employ initialization strategies that prevent the circuit
+         :=                                                 .    from starting in overly entangled or highly randomized
+                  H              RY (θ/2)             H          regions of Hilbert space [13]. The latter is one of the pri-
+                                                                 mary motivations behind warm-start strategies. In ad-
+                                                                 dition, we emphasize that chemically inspired ansätze,
+                                                          (B2)   such as UCCSD, are not immune to barren plateaus,
+                                                                                                                                   14
+
+                             H        RY (− θ8 )             RY (− θ8 )             RY ( θ8 )                  RY ( θ8 )       H
+
+
+   G(2) (θ)                            RY ( θ8 )              RY ( θ8 )            RY (− θ8 )                 RY (− θ8 )
+                :=
+
+
+
+                             H                         H                                              H                        H
+
+
+FIG. 5. Decomposition of the four-qubit entangling gate G(2) (θ) into Hadamard (H), RY rotational gates, and CNOT gates.
+
+
+particularly when a large number of excitations are in-                               Appendix D: Training dynamics
+cluded [107].
+                                                                                    1.          Flow-VQE training trajectories
+
+              Appendix C: Gaussianization flows
+                                                               1
+                                                                             Figure 6 shows the global minimum energy error
+                                                                          throughout the training process across all test molecu-
+   Gaussianization flows (GFs) [77] exhibit dual efficiency               lar systems, illustrating the model’s convergence behav-
+for training and sampling, while simultaneously main-                     ior and optimization efficiency. The consistent down-
+taining universal approximation guarantees for continu-                   ward trend across diverse bond lengths underscores Flow-
+ous distributions. The model builds upon rotation-based                   VQE’s capability to progressively concentrate probabil-
+iterative Gaussianization (RBIG) [108], which alternates                  ity density in low-energy regions, thereby improving the
+between marginal Gaussianization and orthogonal trans-                    quality of variational parameters over time.
+formation steps to transform data toward a standard                          However, local plateau regions are evident, reflecting
+normal distribution. Gaussianization flows reformulate                    stagnation phases during which no lower-energy configu-
+this process by replacing non-parametric density esti-                    rations are sampled. During such phases, the model con-
+mation with trainable mixtures of logistic distributions                  tinues to perform maximum likelihood training on the
+and substituting fixed rotations with learnable orthog-                   historically best samples retained in the buffer, thereby
+onal transformations parameterized via Householder re-                    maintaining optimization pressure. Such stagnation can
+flections [109, 110].                                                     be partially attributed to the limited batch size employed
+   Formally, GFs construct the bijective mapping by a                     in each sampling iteration, which constrains the model’s
+sequence of alternating layers:                                           ability to adequately explore the parameter landscape.
+                fτ = ΨτK ◦ RK ◦ · · · ◦ Ψτ1 ◦ R1 .         (C1)           More fundamentally, as training progresses, the variance
+                                                                          of the learned distribution tends to diminish, leading
+Each marginal Gaussianization layer Ψτi (x) applies the
+                                                                          to over-concentration around already-discovered optima.
+transformation
+                                                ⊤                       While such contraction may enhance confidence in lo-
+      Ψτi (x) = Ψ(1) (x (1)
+                            ), . . . , Ψ(d) (d)
+                                           (x   )   , (C2)                cal predictions, it simultaneously suppresses exploration
+                 τi                     τi
+                                                                          and reduces the likelihood of discovering superior solu-
+where each dimension-wise component is defined as                         tions. This phenomenon can ultimately impede the ac-
+                                                                      curacy that Flow-VQE can achieve as a standalone opti-
+  Ψ(k)
+   τi    x (k)
+                 = Φ−1
+                       ◦ F (k)
+                           τi    x (k)
+                                         , k = 1, . . . , d. (C3)         mizer, thereby underscoring the necessity of incorporat-
+                                                                          ing diversity-preserving or exploration-enhancing sam-
+Here, Φ−1 denotes the inverse of the Gaussian cumulative                  pling techniques in future developments.
+density function (CDF), while
+                             P              (k)
+                                                !
+            (k)
+                
+                  (k)
+                         1 X      x(k) − µj
+          Fτi x         =       σ       (k)
+                                                   (C4)                                  2.       Post-training trajectories
+                          P j=1       h            j
+
+parameterizes a CDF through a mixture of P logistic                          To complement the quantitative results presented as
+                                        n     oP                          Table I in the main text, Fig. 7 provides the correspond-
+                                          (k)
+components with learnable anchor points µj         and                    ing optimization curves to further elucidate the conver-
+                                               j=1
+            n     oP                                                      gence dynamics when using Flow-VQE-M and HF ini-
+              (k)
+bandwidths hj        , where σ(·) represents the logis-                   tialization. A key observation is the consistently steeper
+                       j=1
+tic sigmoid function. Each orthogonal matrix Ri is effi-                  initial descent of Flow-VQE-M across all learning-rate
+ciently parameterized as a product of Householder trans-                  settings, suggesting that the warm-started parameters lie
+formations [109, 110]. The orthogonal transformations                     in regions of the optimization landscape with larger gra-
+maintain invertibility while enabling efficient Jacobian                  dients, thereby enabling faster initial energy minimiza-
+determinant computation, resulting in a model that bal-                   tion. For H4 , all curves exhibit noticeable oscillations
+ances expressivity with computational efficiency in both                  in the later stages of optimization. This is primarily
+directions.                                                               due to the rugged optimization landscape induced by the
+                                                                                                                        15
+
+(a)                                                           (b)
+
+
+
+
+(c)                                                           (d)
+
+
+
+
+(e)                                                           (f)
+
+
+
+
+FIG. 6. Global minimum energy error monitored throughout Flow-VQE training. (a), (b) Flow-VQE-S for H2 O and H4 ,
+respectively; (c)–(f) Flow-VQE-M for H2 O, H4 , NH3 , and C6 H6 , respectively. Flow-VQE-S trains a separate model for each
+geometry, while Flow-VQE-M employs a single shared model across all geometries for each molecule.
+
+
+hardware-efficient ansatz, which interacts with the mo-         Appendix E: Generated results for NH3 and C6 H6
+mentum component in Adam and leads to persistent fluc-
+tuations as the optimizer approaches the ground-state re-         Figure 8 shows the PES points for NH3 and C6 H6 gen-
+gion. In our training runs with learning rates of 0.02 and     erated by Flow-VQE-M. Among the 16 sampled points,
+0.005, the number of circuit evaluations is sufficient for     the one with the lowest energy is selected as the initial-
+the optimization to settle into a quasi-stationary regime,     ization corresponding to the results presented in Fig. 4
+where further improvements become trivial. Nonetheless,        of the main text. Since the training is intentionally
+Flow-VQE-M consistently achieves lower energy errors           lightweight, the generated points are not expected to
+than HF initialization, even in the “bumpy” landscape.         reach computational accuracy at this stage.
+
+
+
+
+  [1] J. Preskill, Quantum computing in the NISQ era and            [2] Y. Kim, A. Eddins, S. Anand, K. X. Wei, E. van den
+      beyond, Quantum 2, 79 (2018).                                     Berg, S. Rosenblatt, H. Nayfeh, Y. Wu, M. Zaletel,
+                                                                                                                             16
+
+
+(a)
+                                                                        O
+                                                                H               H
+
+
+
+
+(b)
+                                                            H       H       H       H
+
+
+
+
+FIG. 7. Post-training trajectories with initialization from HF and Flow-VQE-M, using the Adam optimizer with learning rates
+of 0.02 (left), 0.005 (middle), and 0.001 (right) for molecules (a) H2 O with R = 1.90 Å and (b) H4 with R = 2.58 Å. The gray
+dashed line indicates the threshold for computational accuracy.
+
+
+      K. Temme, and A. Kandala, Evidence for the utility                L. Cincio, and P. J. Coles, Variational quantum algo-
+      of quantum computing before fault tolerance, Nature               rithms, Nature Reviews Physics 3, 625 (2021).
+      618, 500 (2023).                                              [7] M. Cerezo, G. Verdon, H.-Y. Huang, L. Cincio, and
+  [3] D. Bluvstein, S. J. Evered, A. A. Geim, S. H.                     P. J. Coles, Challenges and opportunities in quantum
+      Li, H. Zhou, T. Manovitz, S. Ebadi, M. Cain,                      machine learning, Nature Computational Science 2, 567
+      M. Kalinowski, D. Hangleiter, J. P. Bonilla Ataides,              (2022).
+      N. Maskara, I. Cong, X. Gao, P. Sales Ro-                     [8] A. M. Dalzell, S. McArdle, M. Berta, P. Bienias, C.-
+      driguez, T. Karolyshyn, G. Semeghini, M. J. Gullans,              F. Chen, A. Gilyén, C. T. Hann, M. J. Kastoryano,
+      M. Greiner, V. Vuletić, and M. D. Lukin, Logical quan-           E. T. Khabiboulline, A. Kubica, G. Salton, S. Wang,
+      tum processor based on reconfigurable atom arrays, Na-            and F. G. S. L. Brandão, Quantum algorithms: A sur-
+      ture 626, 58 (2024).                                              vey of applications and end-to-end complexities (2023),
+  [4] R. Acharya et al., Quantum error correction below the             arXiv:2310.03011.
+      surface code threshold, Nature 638, 920 (2025).               [9] A. Peruzzo, J. McClean, P. Shadbolt, M.-H. Yung, X.-
+  [5] A. Montanaro, Quantum algorithms: an overview, npj                Q. Zhou, P. J. Love, A. Aspuru-Guzik, and J. L. O’brien,
+      Quantum Information 2, 15023 (2016).                              A variational eigenvalue solver on a photonic quantum
+  [6] M. Cerezo, A. Arrasmith, R. Babbush, S. C. Benjamin,              processor, Nature Communications 5, 4213 (2014).
+      S. Endo, K. Fujii, J. R. McClean, K. Mitarai, X. Yuan,
+                                                                                                                            17
+
+                                                                      .
+(a)                                  (
+      .
+                                         (                                                     )( (           )
+      .                                  (
+                                                 (                    .
+
+
+      .
+
+
+      .
+                                                                      .
+
+
+
+                                             (                                                        (
+
+
+(b)                             (                                                                         )
+                                                                                                      )
+                                                                  -
+                                                                                                                  )
+)
+
+
+
+
+                                                                  -
+
+
+
+
+FIG. 8. Potential energy surfaces (left) and corresponding errors (right) for the molecular systems (a) NH3 and (b) C6 H6
+evaluated using parameters generated by Flow-VQE-M.
+
+
+ [10] L. Bittel and M. Kliesch, Training variational quantum     [15] R. Sweke, F. Wilde, J. Meyer, M. Schuld, P. K.
+      algorithms is NP-hard, Physical Review Letters 127,             Fährmann, B. Meynard-Piganeau, and J. Eisert,
+      120502 (2021).                                                  Stochastic gradient descent for hybrid quantum-
+ [11] Z. Zimborás, B. Koczor, Z. Holmes, E.-M. Borrelli,             classical optimization, Quantum 4, 314 (2020).
+      A. Gilyén, H.-Y. Huang, Z. Cai, A. Acı́n, L. Aolita,      [16] J. Stokes, J. Izaac, N. Killoran, and G. Carleo, Quantum
+      L. Banchi, F. G. S. L. Brandão, D. Cavalcanti,                 natural gradient, Quantum 4, 269 (2020).
+      T. Cubitt, S. N. Filippov, G. Garcı́a-Pérez, J. Goold,    [17] D. Fitzek, R. S. Jonsson, W. Dobrautz, and
+      O. Kálmán, E. Kyoseva, M. A. C. Rossi, B. Sokolov,            C. Schäfer, Optimizing variational quantum algorithms
+      I. Tavernelli, and S. Maniscalco, Myths around quan-            with qBang: Efficiently interweaving metric and mo-
+      tum computation before full fault tolerance: What               mentum to navigate flat energy landscapes, Quantum
+      no-go theorems rule out and what they don’t (2025),             8, 1313 (2024).
+      arXiv:2501.05694.                                          [18] J. Gacon, C. Zoufal, G. Carleo, and S. Woerner, Simul-
+ [12] J. R. McClean, S. Boixo, V. N. Smelyanskiy, R. Bab-             taneous Perturbation Stochastic Approximation of the
+      bush, and H. Neven, Barren plateaus in quantum neural           Quantum Fisher Information, Quantum 5, 567 (2021).
+      network training landscapes, Nature Communications         [19] M. Wanner, J. Jonasson, E. Carlsson, and D. Dub-
+      9, 4812 (2018).                                                 hashi, Variational Quantum Optimization with Contin-
+ [13] M. Larocca, S. Thanasilp, S. Wang, K. Sharma, J. Bia-           uous Bandits (2025), arXiv:2502.04021.
+      monte, P. J. Coles, L. Cincio, J. R. McClean, Z. Holmes,   [20] N. M. Tubman, C. Mejuto-Zaera, J. M. Epstein,
+      and M. Cerezo, Barren plateaus in variational quantum           D. Hait, D. S. Levine, W. Huggins, Z. Jiang, J. R. Mc-
+      computing, Nature Reviews Physics 7, 174 (2025).                Clean, R. Babbush, M. Head-Gordon, and K. B. Wha-
+ [14] E. R. Anschuetz and B. T. Kiani, Quantum variational            ley, Postponing the orthogonality catastrophe: efficient
+      algorithms are swamped with traps, Nature Communi-              state preparation for electronic structure simulations on
+      cations 13, 7760 (2022).                                        quantum devices (2018), arXiv:1809.05523.
+                                                                                                                          18
+
+[21] S. Fomichev, K. Hejazi, M. S. Zini, M. Kiser, J. Frax-          view Applied 21, 014053 (2024).
+     anet, P. A. M. Casares, A. Delgado, J. Huh, A.-C. Voigt,   [37] K. Mesman, Y. Tang, M. Moller, B. Chen, and S. Feld,
+     J. E. Mueller, and J. M. Arrazola, Initial state prepa-         NN-AE-VQE: Neural network parameter prediction on
+     ration for quantum chemistry on quantum computers,              autoencoded variational quantum eigensolvers (2024),
+     PRX Quantum 5, 040339 (2024).                                   arXiv:2411.15667.
+[22] Z.-J. Zhang, T. H. Kyaw, J. S. Kottmann, M. Degroote,      [38] J. Rivera-Dean, P. Huembeli, A. Acı́n, and J. Bowles,
+     and A. Aspuru-Guzik, Mutual information-assisted                Avoiding local minima in Variational Quantum Algo-
+     adaptive variational quantum eigensolver, Quantum               rithms with Neural Networks (2021), arXiv:2104.02955.
+     Science and Technology 6, 035001 (2021).                   [39] S.-X. Zhang, Z.-Q. Wan, C.-K. Lee, C.-Y. Hsieh,
+[23] F. Truger, J. Barzen, F. Leymann, and J. Obst, Warm-            S. Zhang, and H. Yao, Variational quantum-neural hy-
+     Starting the VQE with Approximate Complex Ampli-                brid eigensolver, Physical Review Letters 128, 120502
+     tude Encoding (2024), arXiv:2402.17378.                         (2022).
+[24] J. Dborin, F. Barratt, V. Wimalaweera, L. Wright,          [40] G. Verdon, M. Broughton, J. R. McClean, K. J. Sung,
+     and A. G. Green, Matrix product state pre-training for          R. Babbush, Z. Jiang, H. Neven, and M. Mohseni,
+     quantum machine learning, Quantum Science and Tech-             Learning to learn with quantum neural networks via
+     nology 7, 035014 (2022).                                        classical neural networks (2019), arXiv:1907.05415.
+[25] M. S. Rudolph, J. Miller, D. Motlagh, J. Chen,             [41] A. Cervera-Lierta, J. S. Kottmann, and A. Aspuru-
+     A. Acharya, and A. Perdomo-Ortiz, Synergistic pre-              Guzik, Meta-variational quantum eigensolver: Learning
+     training of parametrized quantum circuits via tensor            energy profiles of parameterized hamiltonians for quan-
+     networks, Nature Communications 14, 8367 (2023).                tum simulation, PRX Quantum 2, 020329 (2021).
+[26] M. Skogh, O. Leinonen, P. Lolur, and M. Rahm, Ac-          [42] F. Sauvage, S. Sim, A. A. Kunitsa, W. A. Simon,
+     celerating variational quantum eigensolver convergence          M. Mauri, and A. Perdomo-Ortiz, FLIP: A flexible ini-
+     using parameter transfer, Electronic Structure 5, 035002        tializer for arbitrarily-sized parametrized quantum cir-
+     (2023).                                                         cuits (2021), arXiv:2103.08572.
+[27] H.-Y. Liu, T.-P. Sun, Y.-C. Wu, Y.-J. Han, and             [43] Y. Kamata, Q. H. Tran, Y. Endo, and H. Os-
+     G.-P. Guo, Mitigating barren plateaus with transfer-            hima, Molecular Quantum Transformer (2025),
+     learning-inspired parameter initializations, New Journal        arXiv:2503.21686.
+     of Physics 25, 013039 (2023).                              [44] R.-Y. Chang, Y.-C. Lin, P.-C. Hsu, T.-W. Huang,
+[28] A. A. Mele, G. B. Mbeng, G. E. Santoro, M. Collura,             and E.-J. Kuo, Accelerating Parameter Initialization
+     and P. Torta, Avoiding barren plateaus via transfer-            in Quantum Chemical Simulations via LSTM-FC-VQE
+     ability of smooth solutions in a Hamiltonian variational        (2025), arXiv:2505.10842.
+     ansatz, Physical Review A 106, L060401 (2022).             [45] E. G. Tabak and E. Vanden-Eijnden, Density estimation
+[29] T. Rohe, M. B. Mansky, M. Kölle, J. Stein, L. Sünkel,         by dual ascent of the log-likelihood, Communications in
+     and C. Linnhoff-Popien, Accelerated VQE: Parame-                Mathematical Sciences 8, 217 (2010).
+     ter Recycling for Similar Recurring Problem Instances      [46] D. J. Rezende and S. Mohamed, Variational Inference
+     (2025), arXiv:2503.22590.                                       with Normalizing Flows (2016), arXiv:1505.05770.
+[30] I. Lyngfelt and L. Garcı́a-Álvarez, Symmetry-informed     [47] I. Kobyzev, S. J. Prince, and M. A. Brubaker, Normaliz-
+     transferability of optimal parameters in the Quantum            ing flows: An introduction and review of current meth-
+     Approximate Optimization Algorithm, Physical Review             ods, IEEE Transactions on Pattern Analysis and Ma-
+     A 111, 022418 (2025).                                           chine Intelligence 43, 3964 (2020).
+[31] R. Puig, M. Drudis, S. Thanasilp, and Z. Holmes, Vari-     [48] G. Papamakarios, E. Nalisnick, D. J. Rezende,
+     ational quantum simulation: a case study for under-             S. Mohamed, and B. Lakshminarayanan, Normalizing
+     standing warm starts, PRX Quantum 6, 010317 (2025).             Flows for Probabilistic Modeling and Inference (2021),
+[32] Y. Tao, X. Zeng, Y. Fan, J. Liu, Z. Li, and J. Yang,            arXiv:1912.02762.
+     Exploring accurate potential energy surfaces via inte-     [49] J. R. McClean, J. Romero, R. Babbush, and A. Aspuru-
+     grating Variational Quantum Eigensolver with machine            Guzik, The theory of variational hybrid quantum-
+     learning, The Journal of Physical Chemistry Letters 13,         classical algorithms, New Journal of Physics 18, 023023
+     6420 (2022).                                                    (2016).
+[33] Q. Yao, Q. Ji, X. Li, Y. Zhang, X. Chen, M.-G. Ju,         [50] K. Mitarai, M. Negoro, M. Kitagawa, and K. Fu-
+     J. Liu, and J. Wang, Machine Learning Accelerates               jii, Quantum circuit learning, Physical Review A 98,
+     Precise Excited-State Potential Energy Surface Calcula-         032309 (2018).
+     tions on a Quantum Computer, The Journal of Physical       [51] W. Lavrijsen, A. Tudor, J. Müller, C. Iancu, and
+     Chemistry Letters 15, 7061 (2024).                              W. De Jong, Classical optimizers for noisy intermediate-
+[34] J. Ceroni, T. F. Stetina, M. Kieferova, C. O. Marrero,          scale quantum devices, in 2020 IEEE international con-
+     J. M. Arrazola, and N. Wiebe, Generating Approximate            ference on quantum computing and engineering (QCE)
+     Ground States of Molecules Using Quantum Machine                (IEEE, 2020) pp. 267–277.
+     Learning (2023), arXiv:2210.05489.                         [52] D. Chivilikhin, A. Samarin, V. Ulyantsev, I. Iorsh,
+[35] S. Zhang, Z. Qin, Y. Zhang, Y. Zhou, R. Li, C. Du,              A. R. Oganov, and O. Kyriienko, MoG-VQE: Multiob-
+     and Z. Xiao, Diffusion-Enhanced Optimization of Vari-           jective genetic variational quantum eigensolver (2020),
+     ational Quantum Eigensolver for General Hamiltonians            arXiv:2007.04424.
+     (2025), arXiv:2501.05666.                                  [53] J. Jäger, T. N. Kaldenbach, M. Haas, and E. Schultheis,
+[36] J. Miao, C.-Y. Hsieh, and S.-X. Zhang, Neural-network-          Fast gradient-free optimization of excitations in varia-
+     encoded variational quantum algorithms, Physical Re-            tional quantum eigensolvers (2025), arXiv:2409.05939.
+                                                                                                                            19
+
+[54] L. Dinh, J. Sohl-Dickstein, and S. Bengio, Density esti-    [74] A. Kandala, A. Mezzacapo, K. Temme, M. Takita,
+     mation using Real NVP (2017), arXiv:1605.08803.                  M. Brink, J. M. Chow, and J. M. Gambetta, Hardware-
+[55] D. P. Kingma and P. Dhariwal, Glow: Generative flow              efficient variational quantum eigensolver for small
+     with invertible 1x1 convolutions, in Advances in Neural          molecules and quantum magnets, Nature 549, 242
+     Information Processing Systems, Vol. 31 (2018).                  (2017).
+[56] D. P. Kingma, T. Salimans, R. Jozefowicz, X. Chen,          [75] J. M. Arrazola, O. Di Matteo, N. Quesada, S. Jahangiri,
+     I. Sutskever, and M. Welling, Improved variational in-           A. Delgado, and N. Killoran, Universal quantum circuits
+     ference with inverse autoregressive flow, in Advances in         for quantum chemistry, Quantum 6, 742 (2022).
+     Neural Information Processing Systems, Vol. 29 (2016).      [76] R. Xia and S. Kais, Qubit coupled cluster singles and
+[57] G. Papamakarios, T. Pavlakou, and I. Murray, Masked              doubles variational quantum eigensolver ansatz for elec-
+     autoregressive flow for density estimation, in Advances          tronic structure calculations, Quantum Science and
+     in Neural Information Processing Systems, Vol. 30                Technology 6, 015001 (2020).
+     (2017).                                                     [77] C. Meng, Y. Song, J. Song, and S. Ermon, Gaussianiza-
+[58] T. Müller, B. McWilliams, F. Rousselle, M. Gross, and           tion flows, in International Conference on Artificial In-
+     J. Novák, Neural importance sampling, ACM Transac-              telligence and Statistics (PMLR, 2020) pp. 4336–4345.
+     tions on Graphics 38, 1 (2019).                             [78] D.-A. Clevert, T. Unterthiner, and S. Hochreiter, Fast
+[59] C. Durkan, A. Bekasov, I. Murray, and G. Papamakar-              and Accurate Deep Network Learning by Exponential
+     ios, Cubic-Spline Flows (2019), arXiv:1906.02145.                Linear Units (ELUs) (2016), arXiv:1511.07289.
+[60] F. Noé, S. Olsson, J. Köhler, and H. Wu, Boltzmann        [79] D. P. Kingma and J. Ba, Adam: A Method for Stochas-
+     generators: Sampling equilibrium states of many-body             tic Optimization (2017), arXiv:1412.6980.
+     systems with deep learning, Science 365, eaaw1147           [80] K. Nakaji, L. B. Kristensen, J. A. Campos-Gonzalez-
+     (2019).                                                          Angulo, M. G. Vakili, H. Huang, M. Bagherimehrab,
+[61] A. G. Baydin, B. A. Pearlmutter, A. A. Radul, and J. M.          C. Gorgulla, F. Wong, A. McCaskey, J.-S. Kim,
+     Siskind, Automatic differentiation in machine learning:          T. Nguyen, P. Rao, and A. Aspuru-Guzik, The genera-
+     a survey (2018), arXiv:1502.05767.                               tive quantum eigensolver (GQE) and its application for
+[62] J. P. Kleijnen and R. Y. Rubinstein, Optimization and            ground state search (2024), arXiv:2401.09253.
+     sensitivity analysis of computer simulation models by       [81] P. Lolur, M. Skogh, W. Dobrautz, C. Warren,
+     the score function method, European Journal of Oper-             J. Biznárová, A. Osman, G. Tancredi, G. Wendin, J. By-
+     ational Research 88, 413 (1996).                                 lander, and M. Rahm, Reference-state error mitigation:
+[63] R. J. Williams, Simple statistical gradient-following al-        A strategy for high accuracy quantum computation of
+     gorithms for connectionist reinforcement learning, Ma-           chemistry, Journal of Chemical Theory and Computa-
+     chine learning 8, 229 (1992).                                    tion 19, 783 (2023).
+[64] J. A. Pople, Nobel lecture: Quantum chemical models,        [82] E. Sheka, Stretching and Breaking of Chemical Bonds,
+     Reviews of Modern Physics 71, 1267 (1999).                       Correlation of Electrons, and Radical Properties of Co-
+[65] T. Helgaker, P. Jørgensen, and J. Olsen, The Standard            valent Species, in Advances in Quantum Chemistry (El-
+     Models, in Molecular Electronic-Structure Theory (John           sevier, 2015) p. 111–161.
+     Wiley & Sons, Ltd, 2000) Chap. 5, pp. 142–200.              [83] L. Wang, J. Ding, L. Pan, D. Cao, H. Jiang, and
+[66] J. M. Martin, Electron correlation: nature’s weird and           X. Ding, Quantum chemical descriptors in quantitative
+     wonderful chemical glue, Israel Journal of Chemistry 62,         structure–activity relationship models and their appli-
+     e202100111 (2022).                                               cations, Chemometrics and Intelligent Laboratory Sys-
+[67] R. S. Sutton and A. G. Barto, Reinforcement learning:            tems 217, 104384 (2021).
+     An introduction, Vol. 1 (MIT press Cambridge, 1998).        [84] O. A. von Lilienfeld, K.-R. Müller, and A. Tkatchenko,
+[68] R. Rafailov, A. Sharma, E. Mitchell, C. D. Manning,              Exploring chemical compound space with quantum-
+     S. Ermon, and C. Finn, Direct preference optimiza-               based machine learning, Nature Reviews Chemistry 4,
+     tion: Your language model is secretly a reward model,            347 (2020).
+     in Advances in Neural Information Processing Systems,       [85] J. Lanchantin, A. Chen, S. Dhuliawala, P. Yu, J. We-
+     Vol. 36 (2023) pp. 53728–53741.                                  ston, S. Sukhbaatar, and I. Kulikov, Diverse Preference
+[69] H. Xu, A. Sharaf, Y. Chen, W. Tan, L. Shen,                      Optimization (2025), arXiv:2501.18101.
+     B. V. Durme, K. Murray, and Y. J. Kim, Con-                 [86] N. Maus, K. Wu, D. Eriksson, and J. Gardner, Discover-
+     trastive Preference Optimization: Pushing the Bound-             ing Many Diverse Solutions with Bayesian Optimization
+     aries of LLM Performance in Machine Translation                  (2023), arXiv:2210.10953.
+     (2024), arXiv:2401.08417.                                   [87] M. Motta, W. Kirby, I. Liepuoniute, K. J. Sung,
+[70] T. Yu and H. Zhu, Hyper-Parameter Optimization:                  J. Cohn, A. Mezzacapo, K. Klymko, N. Nguyen,
+     A Review of Algorithms and Applications (2020),                  N. Yoshioka, and J. E. Rice, Subspace methods for
+     arXiv:2003.05689.                                                electronic structure simulations on quantum computers,
+[71] V. Bergholm et al., PennyLane: Automatic differentia-            Electronic Structure 6, 013001 (2024).
+     tion of hybrid quantum-classical computations (2022),       [88] J. Robledo-Moreno et al., Chemistry beyond the scale of
+     arXiv:1811.04968.                                                exact diagonalization on a quantum-centric supercom-
+[72] J. R. McClean et al., OpenFermion: the electronic struc-         puter, Science Advances 11, eadu9991 (2025).
+     ture package for quantum computers, Quantum Science         [89] A. Anand, P. Schleich, S. Alperin-Lea, P. W. Jensen,
+     and Technology 5, 034014 (2020).                                 S. Sim, M. Dı́az-Tinoco, J. S. Kottmann, M. Degroote,
+[73] S. Bravyi, J. M. Gambetta, A. Mezzacapo, and                     A. F. Izmaylov, and A. Aspuru-Guzik, A quantum com-
+     K. Temme, Tapering off qubits to simulate fermionic              puting view on unitary coupled cluster theory, Chemical
+     Hamiltonians (2017), arXiv:1701.08213.                           Society Reviews 51, 1659 (2022).
+                                                                                                                             20
+
+ [90] S. Sim, P. D. Johnson, and A. Aspuru-Guzik, Express-               (2019).
+      ibility and entangling capability of parameterized quan-     [106] C. Dankert, R. Cleve, J. Emerson, and E. Livine, Exact
+      tum circuits for hybrid quantum-classical algorithms,              and approximate unitary 2-designs and their application
+      Advanced Quantum Technologies 2, 1900070 (2019).                   to fidelity estimation, Physical Review A 80, 012304
+ [91] S. Zhai, R. Zhang, P. Nakkiran, D. Berthelot, J. Gu,               (2009).
+      H. Zheng, T. Chen, M. A. Bautista, N. Jaitly, and            [107] R. Mao, G. Tian, and X. Sun, Towards determining
+      J. Susskind, Normalizing Flows are Capable Generative              the presence of barren plateaus in some chemically
+      Models (2025), arXiv:2412.06329.                                   inspired variational quantum algorithms, Communica-
+ [92] Z. Holmes, K. Sharma, M. Cerezo, and P. J. Coles, Con-             tions Physics 7, 342 (2024).
+      necting ansatz expressibility to gradient magnitudes and     [108] V. Laparra, G. Camps-Valls, and J. Malo, Iterative
+      barren plateaus, PRX Quantum 3, 010313 (2022).                     Gaussianization: From ICA to Random Rotations,
+ [93] D. Martyniuk, J. Jung, and A. Paschke, Quantum Ar-                 IEEE Transactions on Neural Networks 22, 537–549
+      chitecture Search: A Survey, in 2024 IEEE Interna-                 (2011).
+      tional Conference on Quantum Computing and Engi-             [109] A. S. Householder, Unitary triangularization of a non-
+      neering (QCE) (IEEE, 2024) p. 1695–1706.                           symmetric matrix, Journal of the ACM (JACM) 5, 339
+ [94] H. R. Grimsley, D. Claudino, S. E. Economou,                       (1958).
+      E. Barnes, and N. J. Mayhall, Is the trotterized uccsd       [110] J. M. Tomczak and M. Welling, Improving Varia-
+      ansatz chemically well-defined?, Journal of Chemical               tional Auto-Encoders using Householder Flow (2017),
+      Theory and Computation 16, 1 (2019).                               arXiv:1611.09630.
+ [95] H. R. Grimsley, S. E. Economou, E. Barnes, and N. J.
+      Mayhall, An adaptive variational algorithm for exact
+      molecular simulations on a quantum computer, Nature
+      Communications 10, 3007 (2019).
+ [96] E. Campbell, Random compiler for fast Hamiltonian
+      simulation, Physical Review Letters 123, 070503 (2019).
+ [97] D. Tran, K. Vafa, K. Agrawal, L. Dinh, and B. Poole,
+      Discrete flows: Invertible generative models of discrete
+      data, in Advances in Neural Information Processing Sys-
+      tems, Vol. 32 (2019).
+ [98] E. Hoogeboom, D. Nielsen, P. Jaini, P. Forré, and
+      M. Welling, Argmax flows and multinomial diffusion:
+      Learning categorical distributions, in Advances in Neu-
+      ral Information Processing Systems, Vol. 34 (2021) pp.
+      12454–12465.
+ [99] E. Farhi, J. Goldstone, and S. Gutmann, A Quan-
+      tum Approximate Optimization Algorithm (2014),
+      arXiv:1411.4028.
+[100] F. Fürrutter, Z. Chandani, I. Hamamura, H. J. Briegel,
+      and G. Muñoz-Gil, Synthesis of discrete-continuous
+      quantum circuits with multimodal diffusion models
+      (2025), arXiv:2506.01666.
+[101] E. W. Lemmon, I. H. Bell, M. Huber, and M. McLinden,
+      NIST standard reference database 23: reference fluid
+      thermodynamic and transport properties-REFPROP,
+      Version 10.0, National Institute of Standards and Tech-
+      nology, Standard Reference Data Program, Gaithers-
+      burg , 45 (2018).
+[102] H. Zou, E. Magnusson, H. Brunander, W. Do-
+      brautz, and M. Rahm, Multireference error mitiga-
+      tion for quantum computation of chemistry (2025),
+      arXiv:2505.08291.
+[103] P. Jordan and E. Wigner, Über das Paulische
+      Äquivalenzverbot, Zeitschrift für Physik 47, 631 (1928).
+[104] A. Tranter, P. J. Love, F. Mintert, and P. V. Coveney,
+      A comparison of the Bravyi–Kitaev and Jordan–Wigner
+      transformations for the quantum simulation of quantum
+      chemistry, Journal of Chemical Theory and Computa-
+      tion 14, 5617 (2018).
+[105] Y. Cao, J. Romero, J. P. Olson, M. Degroote, P. D.
+      Johnson, M. Kieferová, I. D. Kivlichan, T. Menke,
+      B. Peropadre, N. P. Sawaya, S. Sim, L. Veis, and
+      A. Aspuru-Guzik, Quantum chemistry in the age of
+      quantum computing, Chemical Reviews 119, 10856
+
+```
+
+## Output
+
+### Section 1: Markdown findings
+For each fallacy detected, one paragraph:
+- **Fallacy:** category from the taxonomy above
+- **Severity:** critical | high | medium | low
+- **Location:** section / paragraph / verbatim quote
+- **Why it's the fallacy:** specific mechanism
+- **Suggested fix:** concrete text change
+
+### Section 2: Machine-readable JSON
+Emit a single fenced ```json``` block:
+
+```json
+{
+  "findings": [
+    {
+      "name": "cherry-picked-baseline",
+      "category": "quantum-cs",
+      "severity": "high",
+      "location": "Section IV, paragraph 2",
+      "evidence": "verbatim quote from manuscript",
+      "suggested_fix": "what to change"
+    }
+  ]
+}
+```
+
+## Constraints
+- Use EXACT category names from the taxonomy.
+- DO NOT report borderline cases below the requested severity threshold.
+- DO NOT invent fallacies that aren't in the taxonomy; if you need a new
+  category, mark severity:low and category:other with a clear name.
+- Each finding MUST include a verbatim evidence quote from the manuscript.
