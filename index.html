@@ -58,7 +58,7 @@
       Claude Code CLI by default, with Codex and Kimi/Moonshot available
       for cross-vendor checks — for researchers, patent examiners, and
       patent attorneys. They
-      <span class="lede-highlight">build run-local evidence KBs with exact
+      <span class="lede-highlight" style="font-size:1.3em;font-weight:700;">build run-local evidence KBs with exact
       quote substantiation, write and review quantum papers, examine quantum
       patents through a USPTO&#8209;style Office Action workflow, and draft
       filing packages</span>. The agents refuse to declare a result novel
@@ -438,6 +438,14 @@ $ ./run.sh --pipeline scout --topic "AI-assisted superconducting chip design" \
         <h4>Evidence-visible scout</h4>
         <p>The scout writes <code>global_literature/</code>, <code>arxiv_corpus/</code>, <code>source_kb/</code>, <code>substantiation/</code>, <code>scout_manifest.json</code>, and <code>scout_quality.json</code> so users can see where it looked.</p>
       </div>
+      <div class="callout">
+        <h4>Retrieval pre-flight gate</h4>
+        <p>Known-answer probes run before every novelty verdict. Recall &lt; 0.67 downgrades verdicts to "(indicative)" and records the original in <code>verdict_ungated</code>. Skip with <code>--skip-retrieval-preflight</code>.</p>
+      </div>
+      <div class="callout">
+        <h4>282-test zero-model suite</h4>
+        <p>All 282 tests run without LLM calls. New modules cover novelty-audit gates, patent-reviewer defect detection, cross-LLM vendor guard, and call_llm resilience/fallback paths.</p>
+      </div>
     </div>
 
     <div class="section-head patent-flow-head">
@@ -659,7 +667,7 @@ $ ./run.sh --pipeline scout --topic "AI-assisted superconducting chip design" \
       </div>
       <div class="prov-row">
         <span class="prov-label">New in QN</span>
-        <span>quantum_scout · quantum_kb · patent_prior_art · novelty_audit · audit_falsify primitives · quantum-CS fallacy taxonomy · cross-LLM falsifiability rubric · venue + library registries · token + USD ledger · Stage-6 CQE</span>
+        <span>quantum_scout · quantum_kb · patent_prior_art · novelty_audit · audit_falsify primitives · quantum-CS fallacy taxonomy · cross-LLM falsifiability rubric · venue + library registries · token + USD ledger · Stage-6 CQE · retrieval pre-flight gate · assumption manifests · patent-panel calibration (5/9 granted, 17.6→1.8 rejected claims) · 282-test zero-model suite</span>
       </div>
     </div>
   </div>
